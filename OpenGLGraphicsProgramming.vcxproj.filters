@@ -22,4 +22,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="OpenGLGr.acfa247a\notes.txt" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,76 @@
+Process of transforming 3D coordinates to 2D pixels: graphics pipeline
+
+GRAPHICS PIPELINE PARTS:
+----> 3D Coordinates -> 2D coordinates
+----> 2D Coordinates -> acutual colored pixels
+
+
+
+Input: Set of 3d coordinates.
+
+The steps of the graphics pipeline have a "parallel nature"
+Shaders: small programs on the GPU for each step of the graphics pipeline
+
+
+As an input to the graphics pipeline we pass in a list of 3d coordinates that 
+should form a triangle in an array. This Vertex Data is a collection of verticies.
+
+
+
+
+STEPS OF THE PIPELINE:
+1.) vertex shader - takes input a single vertex. Create memory on the GPU where we store 
+					the vertex data, configure how OpenGL should interpret the memory
+					and specify how to send the data to the graphics card.
+					We manage this memory via "VERTEX BUFFER OBJECTS - VBO"
+
+2.) primitive assembly - takes all the verticies from vertex shader and assembles 
+						all the point(s) in the shape given
+
+3.) geometry shader - takes output from primitive assembly and has the ability to generate
+				      other shapes by emitting new verticies to form new shapes/
+
+4.) rasterization stage - maps resulting primitives to the corresponding screen pixels
+						  results in fragements for the fragment shader to use. (
+						  Before fragment shaders run, clipping is performed)
+
+						  NOTE: a fragment is all the data required for OPENGL
+								to render a single pixel.
+
+4b.) The main purpose of the fragment shader is to calculate the final color of a pixel
+	and this is usually the stage where all the advanced OpenGL effects occurr.
+
+5.) Alpha Test / Blending - checks the corresponding depth value of the fragment and uses
+							those to check if the resulting fragment is in front or
+							behind other objects and should be discarded accordingly,
+							
+
+
+
+
+
+Other Notes:
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+glBufferData is a function specifically targeted to copy user-defined data into the currently
+bound buffer. Its first argument is the type of the buffer we want to copy data into: the vertex buffer
+object currently bound to the GL_ARRAY_BUFFER target. The second argument specifies the size
+of the data (in bytes) we want to pass to the buffer; a simple sizeof of the vertex data suffices.
+The third parameter is the actual data we want to send.
+The fourth parameter specifies how we want the graphics card to manage the given data. This
+can take 3 forms:
+• GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
+• GL_STATIC_DRAW: the data is set only once and used many times.
+• GL_DYNAMIC_DRAW: the data is changed a lot and used many times
+
+
+
+All shaders are written in the GLSL language:
+In modern OpenGL we are required to define at least a vertex and fragment shader of our own
+
+NOTES ON GLSL:
+#version 330 core: //declaration of version and mention core profile
+layout (location = 0) in vec3 aPos; //set location of input variable via layout (location = 0)
+
+void main(){
+	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); // to set output of vertex shaders
+}													//store position data in predefined gl_Position
