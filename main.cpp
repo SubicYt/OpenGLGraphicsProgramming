@@ -100,11 +100,13 @@ int main() {
 		"}\0";
 	//We must next create a shader object: again with a reference id
 	unsigned int triangle_shader_object;
+	triangle_shader_object = glCreateShader(GL_VERTEX_SHADER);
 	//Next we bind the shader source code to the shader object
-	
+	glShaderSource(triangle_shader_object, 1, &vertexShader, NULL);
 	//After creating a shader object and binding its source code, see if the shader actually compiles
-
+	glCompileShader(triangle_shader_object);
 	//COMMIT THE SAME STEPS FOR THE FRAGMENT SHADER JUST DIFFERNT GLSL CODE!!
+
 
 	while (!glfwWindowShouldClose(window)) {
 		usr_input(window);

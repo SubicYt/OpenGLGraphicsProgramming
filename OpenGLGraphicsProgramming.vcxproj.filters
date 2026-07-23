@@ -24,5 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="OpenGLGr.acfa247a\notes.txt" />
+    <Text Include="GLSLnotes.txt" />
   </ItemGroup>
 </Project>
