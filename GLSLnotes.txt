@@ -7,3 +7,16 @@ layout (location = 0) in vec3 aPos; //vec3 -> vector in R^3
 void main(){
 gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);
 }
+
+
+Fragment Shader
+NOTE: We can declare output values with the out
+
+#version 330 core
+
+out vec4 FragmentData;
+
+void main(){
+FragmentData = vec4(0.1f, 0.2f, 0.3f, 0.4f);
+}
+

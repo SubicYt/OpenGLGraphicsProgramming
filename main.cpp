@@ -80,6 +80,12 @@ int main() {
 	We manage this memory via so called vertex buffer objects (VBO) that can store a large number
 	of vertices in the GPU’s memory.
 	*/
+
+	//first create a vertex array object
+	unsigned int VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO); //Binds the vertex array object with the name VAO;
+
 	unsigned int VBO;
 	glGenBuffers(1, &VBO); //generate unique buffer id with glGenBuffers
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); //"Bind" our general buffer to an array buffer (vertex buffer object)
@@ -106,13 +112,79 @@ int main() {
 	//After creating a shader object and binding its source code, see if the shader actually compiles
 	glCompileShader(triangle_shader_object);
 	//COMMIT THE SAME STEPS FOR THE FRAGMENT SHADER JUST DIFFERNT GLSL CODE!!
+	int success; //used to check for compile time errrors
+	glGetShaderiv(triangle_shader_object, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		std::cout << "Failed to compile vertex shader";
+		glfwTerminate();
+	}
 
+
+	/*
+	Next we create a "fragment shader" used to give pixels data for their final output color
+	*/
+	const char* FragmentShader = "#version 330 core \n"
+		"out vec4 FragmentData;\n"
+		"void main()\n"
+		"{\n"
+		"FragmentData = vec4(1.0f, 0.1f, 0.2f, 1.0f);\n"
+		"}\0";
+	
+	int fragment_success;
+	unsigned int fragment_shader_object;
+	fragment_shader_object = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader_object, 1, &FragmentShader, NULL);
+	glCompileShader(fragment_shader_object);
+	
+	glGetShaderiv(fragment_shader_object, GL_COMPILE_STATUS, &fragment_success);
+	if (!fragment_success) {
+		std::cout << "failed to compile fragment shader";
+		glfwTerminate();
+	}
+
+	//NOW we must link both shader objects to a shader program that we can use for rendering.
+
+	/*
+	When linking the shaders into a program it links the outputs of each shader to the inputs of the
+	next shader. 
+	*/
+	unsigned int shader_program;
+	shader_program = glCreateProgram();
+	glAttachShader(shader_program, triangle_shader_object);
+	glAttachShader(shader_program, fragment_shader_object);
+	glLinkProgram(shader_program);
+
+	//error checking
+	int link_success;
+	char link_info_log[512];
+	glGetProgramiv(shader_program, GL_LINK_STATUS, &link_success);
+	if (!link_success) {
+		glGetProgramInfoLog(shader_program, sizeof(link_info_log), NULL, link_info_log);
+		std::cout << "shader program failed to link";
+		glfwTerminate();
+	}
+
+	//we now activate this shader_program using:
+	glUseProgram(shader_program);
+	//every shader and rendering call after this above call will use shader_program;
+	glDeleteShader(triangle_shader_object);
+	glDeleteShader(fragment_shader_object); //can delete these now, we dont need them anymore;
+
+	//Now we must specify how OpenGL and our GPU must use our vertex data before rendering (it doesnt know its a triangle bro)
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); //given vertex attribute location as its argument;
+
+	
 
 	while (!glfwWindowShouldClose(window)) {
 		usr_input(window);
 
 		glClearColor(0.1f, 0.2f, 0.3f, 0.4f); //set window color;
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(shader_program);
+		glBindVertexArray(VAO); //why do it a second time in our render loop?
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

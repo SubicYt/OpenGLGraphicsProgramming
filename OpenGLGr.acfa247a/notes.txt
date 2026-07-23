@@ -74,3 +74,27 @@ layout (location = 0) in vec3 aPos; //set location of input variable via layout 
 void main(){
 	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); // to set output of vertex shaders
 }													//store position data in predefined gl_Position
+
+
+ORDER FOR MAKING A SHADER:::
+we initialized the vertex data in a buffer using a vertex buffer object,
+set up a vertex and fragment shader and 
+told OpenGL how to link the vertex data to the vertex shader’s vertex attributes.
+
+
+
+
+glVertexAttribPointer() NOTES:
+Vertex attribute is a property of a vertex, e.g. its position, colour, texture coordinate, etc. Vertex attributes specify where and how each property is stored in a vertex buffer, so a shader can access them properly.
+
+For example, if we have a vertex buffer with position, colour and texture coordinate data, then data for a single vertex could look like this in memory:
+
++-------+-------+-------+--------------+-------+-------+
+| float | float | float | unsigned int | float | float |
++-------+-------+-------+--------------+-------+-------+
+The first 3 floats are the x, y and z components of the position, the unsigned int the colour (encoded as 4 8-bit unsigned values, e.g. an RGBA value) and the last 2 floats the u and v components of the texture coordinate.
+
+How OpenGL should handle this data is specified with glVertexAttribPointer():
+
+
+We can utilize a vertex array object to store any subsequent vertex attribute calls
