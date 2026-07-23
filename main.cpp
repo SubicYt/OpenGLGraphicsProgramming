@@ -165,7 +165,6 @@ int main() {
 	}
 
 	//we now activate this shader_program using:
-	glUseProgram(shader_program);
 	//every shader and rendering call after this above call will use shader_program;
 	glDeleteShader(triangle_shader_object);
 	glDeleteShader(fragment_shader_object); //can delete these now, we dont need them anymore;
@@ -173,7 +172,6 @@ int main() {
 	//Now we must specify how OpenGL and our GPU must use our vertex data before rendering (it doesnt know its a triangle bro)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0); //given vertex attribute location as its argument;
-
 	
 
 	while (!glfwWindowShouldClose(window)) {

@@ -1,0 +1,45 @@
+In order to render an object on our screen there are many steps to take:
+The following are absolutely necessary:
+
+1.) First we must create some "verticies array" describing where we want the verticies of our object to lay
+2.) Create, initialize, and bind some vertex array object
+3.) Create a vertex buffer object:
+		Vertex buffer objects are used as the following:
+		"creating memory on the GPU where we store the vertex
+		data, configure how OpenGL should interpret the memory and specify how to send the data to the
+		graphics card.
+
+		We manage this memory via so called vertex buffer objects (VBO) that can store a large number
+		of vertices in the GPU’s memory."
+	
+	3b.) VBO comes with a unique identifier (unsigned int), we must bind our VBO to the GL_ARRAY_BUFFER
+			Then we must copy our verticies array data into the buffer itself "glBufferData"
+
+4.) Create our vertex shader : ->  allows us to specify any input we want in the form of vertex attributes
+
+5.) Create our fragment shader
+
+		NOTE: Shaders are to be written in GLSL and have an associated "shader object", these shader objects
+				are to be created, initialized and need to be bounded to their source code. Next we must
+				actually compile the shader --> this is done with glCompileShader
+
+	
+
+6.) Create a shader program that links the vertex and fragment shader
+		6b.) a shader program must Attach shaders to the shader program itself and then finally link
+			everything together with glLinkProgram(shaderProgram)
+
+		6c.) we can check to see if this succeeded with glGetProgramiv()
+
+		6d.) we actually need to specify to enable this shader program with: glUseProgram(shaderProgram);
+
+		6e.) delete our vertex and fragement shader objects after linke
+
+7.) glVertexArrtibPointer ->  we have to specify how OpenGL should interpret the vertex data before rendering. we have to manually specify what part of our input data
+	goes to which vertex attribute in the vertex shader.
+	
+	7b.) glEnableVertexAttribArray(0);
+
+8.) Within our render loop we can specifiy to useProgram(shaderProgram), 
+	bind our vertex array object again
+	finally glDrawfunction();

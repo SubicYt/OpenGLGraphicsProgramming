@@ -23,7 +23,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="OpenGLGr.acfa247a\notes.txt" />
-    <Text Include="GLSLnotes.txt" />
+    <Text Include="GLSLnotes.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="OpenGLGr.acfa247a\notes.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="TriangleRenderNotesStructure.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="ProgramStructure.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

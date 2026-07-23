@@ -1,0 +1,33 @@
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <stdio.h>
+#include <iostream>
+
+//instantiate a GLFW Window()
+#pragma comment(lib, "glfw3.lib")
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "gdi32.lib")
+#pragma comment(lib, "shell32.lib")
+
+
+in our void main() body:
+
+1.)Initialize glfwInit();
+	Note: we must provide our glfwWindowHints() this includes our version major, minor, and core profile
+
+2.)Create our window
+
+3.)Before calling any OpenGL function pointers we must intialize Glad
+	Note: Do this with gladLoadGLLoader()
+
+4.) specify to use our viewport every event refresh
+	Note: use glfwSetFramebufferCallback()
+
+5.) create render loop with glfwWindowShouldClose:
+	inside render loop: 
+		- clear color
+		- swap buffers //this is for 
+		- poll events
+
+6.) glfwTerminate()

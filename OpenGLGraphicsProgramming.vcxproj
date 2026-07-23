@@ -139,6 +139,8 @@
   <ItemGroup>
     <Text Include="GLSLnotes.txt" />
     <Text Include="OpenGLGr.acfa247a\notes.txt" />
+    <Text Include="ProgramStructure.txt" />
+    <Text Include="TriangleRenderNotesStructure.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
