@@ -16,7 +16,7 @@ in our void main() body:
 1.)Initialize glfwInit();
 	Note: we must provide our glfwWindowHints() this includes our version major, minor, and core profile
 
-2.)Create our window
+2.)Create our window -> set that window as current context
 
 3.)Before calling any OpenGL function pointers we must intialize Glad
 	Note: Do this with gladLoadGLLoader()

@@ -10,7 +10,6 @@
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "shell32.lib")
 
-
 	/*  NOTTTEEEE::::::
 		OpenGL uses data from glViewPort to transform 2D coordinates it processed
 		to coordinates on the screen
@@ -20,11 +19,12 @@
 		d coordinates are between - 1 and 1.
 		::::::: END NOTE
 	*/
-void framebuffer_set_callback(GLFWwindow* window, int width, int height) {
+
+void Framebuffer_Set_Callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void usr_input(GLFWwindow* window) {
+void user_close_input(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwTerminate();
 	}
@@ -32,163 +32,142 @@ void usr_input(GLFWwindow* window) {
 
 int main() {
 	if (!glfwInit()) {
-		std::cout << "Failure to initialize GLFW" << std::endl;
+		std::cout << "failed to initizalize glfw()" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-
+	else {
+		std::cout << "success" << std::endl;
+	}
+	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//set as core
-		
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Test", NULL, NULL);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //specify we are using core profile
+
+	//Create Window
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Exercise 2", NULL, NULL);
 	if (window == NULL) {
-		std::cout << "WINDOW() FAILURE TO CREATE";
+		std::cout << "failed to create window" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	//after creating a window we must set the context
-	//bind the window to the execution thread
+
 	glfwMakeContextCurrent(window);
-
-	//now before calling any OpenGl funtion pointers
-	//we must initialize GLAD
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cout <<"failed to initialize glad";
-		exit(EXIT_FAILURE);
-	}
 	
+	//before calling any opengl functions we must initialize glad
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		std::cout << "failed to initialize GLAD" << std::endl;
+		glfwTerminate();
+	}
 
-	//we must set-up a viewport
-	//now we must specify to use that viewport everytime an "event" refreshes in
-	glfwSetFramebufferSizeCallback(window, framebuffer_set_callback);
+	glfwSetFramebufferSizeCallback(window, Framebuffer_Set_Callback); 
+	/*
+	This function sets the framebuffer resize callback of the specified window, 
+	which is called when the framebuffer of the specified window is resized.
+	*/
 
 	/*
-	Following these steps we will begin a triangle render;
-	first we will use GLSL lang. to 
+	Begin OpenGL Triangle rendering here:
 	*/
 	float triangle_verticies[] = {
+		//first triangle
 		-0.5f, -0.5f, 0.0f,
+		0.0f, 0.5f, 0.0f,
 		0.5f, -0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f
+		//Second Triangle
+		0.5f, -0.5f, 0.0f,
+		0.75f, 0.5f, 0.0f,
+		0.9f, -0.5f, 0.0f
 	};
-	/*
-	With the vertex data defined we’d like to send it as input to the first process of the graphics
-	pipeline: the vertex shader.
-	This is done by creating memory on the GPU where we store the vertex
-	data, configure how OpenGL should interpret the memory and specify how to send the data to the
-	graphics card.
-
-	We manage this memory via so called vertex buffer objects (VBO) that can store a large number
-	of vertices in the GPU’s memory.
-	*/
-
-	//first create a vertex array object
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO); //Binds the vertex array object with the name VAO;
-
-	unsigned int VBO;
-	glGenBuffers(1, &VBO); //generate unique buffer id with glGenBuffers
-	glBindBuffer(GL_ARRAY_BUFFER, VBO); //"Bind" our general buffer to an array buffer (vertex buffer object)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_verticies), &triangle_verticies, GL_STATIC_DRAW);
-	//above line copies data from trianlge_verticies into our currently bound GL_ARRAY_BUFFER, buffer (VBO);
 	
-	/*
-	As of now we created and stored vertex data within our graphics card memory,
-	this data is managed with our vertex buffer object VBO.
+	unsigned int VAO; //vector array object
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO); //We now binded out vertex array object to be VAO
+	
+	//Create a Vertex Buffer Object
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); //Assign GL_ARRAY_BUFFER, our VBO
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_verticies), &triangle_verticies, GL_STATIC_DRAW); 
+	//^^^Copy our triange_verticies into our GL_ARRAY_BUFFER, set it to a GL_STATIC_DRAW;
 
-	NEXT: we write vertex and fragment shaders that actually process this data.
-	*/
-	const char* vertexShader = "#version 330 core \n"
+	//setup our vertex shader
+	const char* vertex_shader = "#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
 		"void main()\n"
 		"{\n"
-		"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f); \n"
+		"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n"
 		"}\0";
-	//We must next create a shader object: again with a reference id
-	unsigned int triangle_shader_object;
-	triangle_shader_object = glCreateShader(GL_VERTEX_SHADER);
-	//Next we bind the shader source code to the shader object
-	glShaderSource(triangle_shader_object, 1, &vertexShader, NULL);
-	//After creating a shader object and binding its source code, see if the shader actually compiles
-	glCompileShader(triangle_shader_object);
-	//COMMIT THE SAME STEPS FOR THE FRAGMENT SHADER JUST DIFFERNT GLSL CODE!!
-	int success; //used to check for compile time errrors
-	glGetShaderiv(triangle_shader_object, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		std::cout << "Failed to compile vertex shader";
+
+	unsigned int triangles_shader_obj;
+	triangles_shader_obj = glCreateShader(GL_VERTEX_SHADER);
+	//next bind our GLSL source code to the shader object
+	glShaderSource(triangles_shader_obj, 1, &vertex_shader, NULL); //rmr for now set len param to NULl
+	//compile our shader
+	glCompileShader(triangles_shader_obj);
+	//check for a successful shader compile
+	int vertex_shader_status;
+	glGetShaderiv(triangles_shader_obj, GL_COMPILE_STATUS, &vertex_shader_status);
+	
+	if (!vertex_shader_status) {
+		std::cout << "vertex shader failed to compile";
 		glfwTerminate();
 	}
 
-
-	/*
-	Next we create a "fragment shader" used to give pixels data for their final output color
-	*/
-	const char* FragmentShader = "#version 330 core \n"
-		"out vec4 FragmentData;\n"
-		"void main()\n"
-		"{\n"
-		"FragmentData = vec4(1.0f, 0.1f, 0.2f, 1.0f);\n"
-		"}\0";
+	//Next we create the fragment shader
 	
-	int fragment_success;
+	const char* fragment_shader = "#version 330 core\n"
+		"out vec4 fragment_data;\n"
+		"void main() \n"
+		"{\n"
+		"fragment_data = vec4(0.5f, 0.9f, 1.0f, 1.0f);\n"
+		"}\0";
+
 	unsigned int fragment_shader_object;
 	fragment_shader_object = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader_object, 1, &FragmentShader, NULL);
+	glShaderSource(fragment_shader_object, 1, &fragment_shader, NULL);
 	glCompileShader(fragment_shader_object);
-	
-	glGetShaderiv(fragment_shader_object, GL_COMPILE_STATUS, &fragment_success);
-	if (!fragment_success) {
+
+	int fragment_shader_status;
+	glGetShaderiv(fragment_shader_object, GL_COMPARE_REF_TO_TEXTURE, &fragment_shader_status);
+	if (!fragment_shader_status) {
 		std::cout << "failed to compile fragment shader";
 		glfwTerminate();
 	}
-
-	//NOW we must link both shader objects to a shader program that we can use for rendering.
-
-	/*
-	When linking the shaders into a program it links the outputs of each shader to the inputs of the
-	next shader. 
-	*/
+	
+	//Now we must create a shader program and link the shaders
 	unsigned int shader_program;
 	shader_program = glCreateProgram();
-	glAttachShader(shader_program, triangle_shader_object);
+	glAttachShader(shader_program, triangles_shader_obj);
 	glAttachShader(shader_program, fragment_shader_object);
-	glLinkProgram(shader_program);
+	glLinkProgram(shader_program); // links the vertex and fragment shaders
 
-	//error checking
-	int link_success;
-	char link_info_log[512];
-	glGetProgramiv(shader_program, GL_LINK_STATUS, &link_success);
-	if (!link_success) {
-		glGetProgramInfoLog(shader_program, sizeof(link_info_log), NULL, link_info_log);
-		std::cout << "shader program failed to link";
+	int program_status;
+	glGetProgramiv(shader_program, GL_LINK_STATUS, &program_status);
+	if (!program_status) {
+		std::cout << "Failed To Link Shaders";
 		glfwTerminate();
 	}
+	//We dont need out shader objects anymore
+	glDeleteShader(triangles_shader_obj);
+	glDeleteShader(fragment_shader_object);
 
-	//we now activate this shader_program using:
-	//every shader and rendering call after this above call will use shader_program;
-	glDeleteShader(triangle_shader_object);
-	glDeleteShader(fragment_shader_object); //can delete these now, we dont need them anymore;
-
-	//Now we must specify how OpenGL and our GPU must use our vertex data before rendering (it doesnt know its a triangle bro)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0); //given vertex attribute location as its argument;
-	
+	glEnableVertexAttribArray(0);
+
 
 	while (!glfwWindowShouldClose(window)) {
-		usr_input(window);
+		user_close_input(window);
 
-		glClearColor(0.1f, 0.2f, 0.3f, 0.4f); //set window color;
+		glClearColor(0.7f, 0.2f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shader_program);
 		glBindVertexArray(VAO); //why do it a second time in our render loop?
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
 	}
 	glfwTerminate();
 	return 0;
-
-
 }
