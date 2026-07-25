@@ -1,0 +1,81 @@
+In order to map a texture to the triangle we need to tell each vertex of the triangle which part of
+the texture it corresponds to. Each vertex should thus have a TEXTURE COORDINATE associated with them
+that specifies what part of the texture image to sample from.
+
+Texture coordinates range from 0,1 on the x and y axis
+-> retrieving the texture color via texture coordinates is "sampling"
+
+
+We only have to pass 3 texture coordinates to the
+vertex shader, which then passes those to the fragment shader that neatly interpolates all the texture
+coordinates for each fragment.
+The resulting texture coordinates would then look like this:
+float texCoords[] = {
+	0.0f, 0.0f, // lower-left corner
+	1.0f, 0.0f, // lower-right corner
+	0.5f, 1.0f // top-center corner
+};
+
+
+TEXTURE WRAPPING: - Using default coordinates outside of the permitted 0,1 range
+ - GL_REPEAT
+ - GL_MIRRORED_REPEAT
+ - GL_CLAMP_TO_EDGE
+ - GL_CLAMP_TO_BOARDER
+
+Each of the aforementioned options can be set using the following:
+glTexParameteri();
+
+
+
+TEXTURE FILTERING: - OPENGL has to figure out which texture pixel to map to each texutre coordinate
+There are a couple of ways to go about doing this:
+GL_NEAREST and GL_LINEAR
+
+All you must know is that GL_LINEAR outputs a more "reaslistic textures" which GL_NEAREST has that 8-bit look.
+
+Texture filering can be done with the same glTexParametri() function
+
+
+
+
+MIPMAPS: (See desc below);
+"Imagine we had a large room with thousands of objects, each with an attached texture. There will be
+objects far away that have the same high resolution texture attached as the objects close to the viewer.
+Since the objects are far away and probably only produce a few fragments, OpenGL has difficulties
+retrieving the right color value for its fragment from the high resolution texture, since it has to pick a
+texture color for a fragment that spans a large part of the texture. This will produce visible artifacts
+on small objects, not to mention the waste of memory bandwidth using high resolution textures on
+small objects.
+To solve this issue OpenGL uses a concept called mipmaps that is basically a collection of
+texture images where each subsequent texture is twice as small compared to the previous one."
+
+
+- idea behind mipmaps should be easy to understand: after a certain distance threshold from the viewer,
+OpenGL will use a different mipmap texture that best suits the distance to the object. Because the
+object is far away, the smaller resolution will not be noticeable to the user.
+
+we can use the following function: "glGenerateMipmaps()"
+
+
+LOADING TEXTURES:
+we are using the "stb_image.h" header file (added to Libraries\include)
+use the stbi_load() function to load a texture, this returns an unsigned char pointer;
+
+In order to generate a texture, it is very similar to generating any other object:
+	1.) unsigned int texture
+		1a.) glGenTextures(1,...);
+
+	2.) glBindTexture(GL_TEXTURE_2D, &texture);
+
+	3.)glTexImage2D -> Once glTexImage2D is called, the currently bound texture object now has the texture image
+attached to it.
+	
+	4.) glGenerateMipmap()
+	
+	5.) stbi_image_free();
+
+
+APPLYING TEXTURES: 
+	We must include our desired texture coordinates to our verticires[] matrix to feed to our vector shader;
+	specify a layout (location 2);

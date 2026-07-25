@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Downloads\glad (1)\src\glad.c" />
+    <ClCompile Include="IncludeImage.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -141,7 +142,11 @@
     <Text Include="OpenGLGr.acfa247a\notes.txt" />
     <Text Include="ProgramStructure.txt" />
     <Text Include="shadersNotes.txt" />
+    <Text Include="Textures.txt" />
     <Text Include="TriangleRenderNotesStructure.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\Downloads\stonetiles_003_diff.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
