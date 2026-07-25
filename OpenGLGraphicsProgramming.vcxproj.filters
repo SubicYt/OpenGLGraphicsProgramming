@@ -35,5 +35,6 @@
     <Text Include="ProgramStructure.txt">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="shadersNotes.txt" />
   </ItemGroup>
 </Project>

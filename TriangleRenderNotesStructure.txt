@@ -5,7 +5,7 @@ The following are absolutely necessary:
 2.) Create, initialize, and bind some vertex array object
 3.) Create a vertex buffer object:
 		Vertex buffer objects are used as the following:
-		"creating memory on the GPU where we store the vertex
+		"creatings memory on the GPU where we store the vertex
 		data, configure how OpenGL should interpret the memory and specify how to send the data to the
 		graphics card.
 

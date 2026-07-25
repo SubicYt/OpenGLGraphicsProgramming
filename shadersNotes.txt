@@ -1,0 +1,34 @@
+Shaders always begin with a version declaration, followed by a list of input and output variables,
+uniforms and its main function.Each shader’s entry point is at its main function where we process
+any input variables and output the results in its output variables.
+
+
+A shader typically has the following structure:
+#version version_number
+in type in_variable_name;
+in type in_variable_name;
+out type out_variable_name;
+uniform type uniform_name;
+void main()
+{
+// process input(s) and do some weird graphics stuff
+	...
+// output processed stuff to output variable
+out_variable_name = weird_stuff_we_processed;
+}
+
+
+EACH INPUT VARIABLE IS KNOWN AS A VERTEX ATTRIBUTE
+GLSL supports two types unique to it, vertex and matricies
+
+If we want to send data from one shader to another we declare the output in the sending shader and similar input in the recieving shader
+(Same name and type)
+
+UNIFORMS:
+Steps to running a uniform:
+1.) set uniform in GLSL shader source code
+2.) After creating a shader program, get location and program using glGetUniformLocation() (this returns an int).
+3.) Finally set the values of our uniform using glUniform4f();
+	---->NOTE: before setting the values of the uniform you must specify useProgram(shader_program)
+				The uniform updated belongs to whatever shader program is running currently.
+Seperate note: if youre doing something like lets say "changing the color of an object over time", you must place that code in the rendering loop (duh).
