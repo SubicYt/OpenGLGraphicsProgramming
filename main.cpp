@@ -74,21 +74,21 @@ int main() {
 	/*
 	THE FOLLOWING SPECIFIED SECTION OF CODE IS MEANT FOR LOADING TEXTURES:
 	*/
-	int width, height, nr_channels;
-	unsigned char* texture_data = stbi_load("C:/Users/Ethan Denning/OneDrive/Desktop/OpenGLGraphicsProgramming/stonetiles_003_diff.jpg", &width, &height, &nr_channels, 0);
-
+	int width, height, nr_num;
+	unsigned char* texture_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\stonetiles_003_diff.jpg", 
+												&width, &height, &nr_num, 0);
 	if (!texture_data) {
 		std::cout << "failed to load texture data";
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
-
+	//bind our texture to a Gl_TEXTURE_2D
 	unsigned int stone_texture_object;
 	glGenTextures(1, &stone_texture_object);
-
-	//bind our texture to a Gl_TEXTURE_2D
-	glBindTexture(GL_TEXTURE_2D, stone_texture_object);
 	//set our parameters
+	glBindTexture(GL_TEXTURE_2D, stone_texture_object);
+	//specify our texture wrap along the s and t axis 
+	//specify how we want to filter our magnifying and minimal filter (I used a gl_linear for a more realistic look)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -99,7 +99,6 @@ int main() {
 	glGenerateMipmap(stone_texture_object);
 	//we dont need our texture_data anymore
 	stbi_image_free(texture_data);
-
 
 	float triangle_verticies[] = {
 		//first triangle 
@@ -129,16 +128,16 @@ int main() {
 	const char* vertex_shader = "#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
 		"layout (location = 1) in vec3 aColor; \n"
-		"layout(location = 2) in vec2 aTexCoords; \n"
+		"layout (location = 2) in vec2 aTexCoordinates; \n"
 
 		"out vec3 ourColor;\n"
-		"out vec2 texture_coordinates; \n"
+		"out vec2 stone_texture_out;\n"
 
 		"void main()\n"
 		"{\n"
 		"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n"
 		"ourColor = aColor;\n"
-		"texture_coordinates = aTexCoords;\n"
+		"stone_texture_out = aTexCoordinates;"
 		"}\0";
 
 	unsigned int triangles_shader_obj;
@@ -161,7 +160,7 @@ int main() {
 	const char* fragment_shader = "#version 330 core\n"
 		"out vec4 fragment_data;\n"
 		"in vec3 ourColor;\n"
-		"in vec2 texture_coordinates; \n"
+		"in vec2 stone_texture_out; \n"
 		"uniform sampler2D our_texture;\n"
 		/*
 		 GLSL has a built-in data-type for texture objects called
@@ -171,7 +170,7 @@ int main() {
 		*/
 		"void main() \n"
 		"{\n"
-		"fragment_data = texture(our_texture, texture_coordinates);\n"
+		"fragment_data = texture(our_texture, stone_texture_out);\n"
 		"}\0";
 
 	unsigned int fragment_shader_object;
@@ -209,7 +208,7 @@ int main() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(2);
 
 	while (!glfwWindowShouldClose(window)) {
