@@ -43,5 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\Downloads\stonetiles_003_diff.jpg" />
+    <Image Include="apocalyse.png" />
   </ItemGroup>
 </Project>

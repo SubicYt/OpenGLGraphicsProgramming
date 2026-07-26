@@ -58,6 +58,15 @@ object is far away, the smaller resolution will not be noticeable to the user.
 we can use the following function: "glGenerateMipmaps()"
 
 
+TEXTURE UNITS:
+What is the purpose of Sampler2D uniform that we included? Well, we can actually use that to assign a location 
+value to our texture in a glUniform1i(); This is for the purpose of setting up multiple textures at the same time
+The location of said texture is the "texture unit";
+		-We can bind to multiple textures at once as long as we activate the corresponding texutre unit first
+		- We do this with glActiveTexture(GL_TEXTURE(N)); //start N at zero for first texutre
+		- After calling glActiveTexture then we call for a glBindTexture;
+
+
 LOADING TEXTURES:
 we are using the "stb_image.h" header file (added to Libraries\include)
 use the stbi_load() function to load a texture, this returns an unsigned char pointer;

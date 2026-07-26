@@ -1,3 +1,11 @@
+/*
+TODO:
+implement a texture unit?
+Transformations and Coordinate systems
+When chapter 1 is finished start optimizing the structure of this code base
+*/
+
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -74,10 +82,11 @@ int main() {
 	/*
 	THE FOLLOWING SPECIFIED SECTION OF CODE IS MEANT FOR LOADING TEXTURES:
 	*/
-	int width, height, nr_num;
-	unsigned char* texture_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\stonetiles_003_diff.jpg", 
-												&width, &height, &nr_num, 0);
-	if (!texture_data) {
+	int stone_width, stone_height, stone_nr_num;
+	unsigned char* stone_texture_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\stonetiles_003_diff.jpg", 
+												&stone_width, &stone_height, &stone_nr_num, 0);
+
+	if (!stone_texture_data) {
 		std::cout << "failed to load texture data";
 		glfwTerminate();
 		exit(EXIT_FAILURE);
@@ -94,23 +103,51 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//Fill in our GL_TEXTURE_2D with our image data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, stone_width, stone_height, 0, GL_RGB, GL_UNSIGNED_BYTE, stone_texture_data);
 	//finally generate mipmaps
 	glGenerateMipmap(stone_texture_object);
 	//we dont need our texture_data anymore
-	stbi_image_free(texture_data);
+	stbi_image_free(stone_texture_data);
+	
+
+	int graf_width, graf_height, graf_nr_num;
+	unsigned char* graf_image_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\apocalyse.png",
+		&graf_width, &graf_height, &graf_nr_num, 0);
+
+	if (!graf_image_data) {
+		std::cout << "failed to load graffiti image data";
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
+	stbi_set_flip_vertically_on_load(true); //flip image about x axis
+
+	unsigned int graffiti_texture_object;
+	glGenTextures(1, &graffiti_texture_object);
+	//Bind texture again
+	glBindTexture(GL_TEXTURE_2D, graffiti_texture_object);
+	//specify params
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, graf_width, graf_height, 0, GL_RGB, GL_UNSIGNED_BYTE, graf_image_data);
+	//gen mipmaps
+	glGenerateMipmap(graffiti_texture_object);
+	//free data
+	stbi_image_free(graf_image_data);
+	
 
 	float triangle_verticies[] = {
 		//first triangle 
 		//formatting of the following bytes:
 		//first 3 - position, second 3 - color, last 2 - texutre coords
-		-0.5f, -0.5f, 0.0f, 1.0f, 0.3f, 0.5f, 1.0f, 1.0f,
-		0.0f, 0.5f, 0.0f, 0.4f, 0.2f, 0.6f, 1.0f, 0.0f,
-		0.5f, -0.5f, 0.0f, 0.7f, 0.9f, 0.0f, 0.0f, 1.0f,
-		//Second Triangle (right three float values are rgb values)
-		0.5f, -0.5f, 0.0f, 0.2f, 0.6f, 0.9f, 1.0f, 1.0f,
-		0.75f, 0.5f, 0.0f, 0.4f, 0.1f, 0.1f, 1.0f, 0.0f,
-		0.9f, -0.5f, 0.0f, 0.6f, 1.0f, 0.4f, 0.0f, 1.0f
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.3f, 0.5f, 0.0f, 0.0f,//bottom left
+		-0.5f, 0.5f, 0.0f, 0.4f, 0.2f, 0.6f, 0.0f, 1.0f, //top left
+		0.5f, -0.5f, 0.0f, 0.7f, 0.9f, 0.6f, 1.0f, 0.0f, // bottom right 
+
+		-0.5f, 0.5f, 0.0f, 0.7f, 0.9f, 0.6f, 0.0f, 1.0f, //top left
+		0.5f, 0.5f, 0.0f, 0.4f, 0.7f, 0.8f, 1.0f, 1.0f, //top right
+		0.5f, -0.5f, 0.0f, 0.7f, 0.9f, 0.6f, 1.0f, 0.0f // bottom right
 	};
 	
 	unsigned int VAO; //vector array object
@@ -131,13 +168,13 @@ int main() {
 		"layout (location = 2) in vec2 aTexCoordinates; \n"
 
 		"out vec3 ourColor;\n"
-		"out vec2 stone_texture_out;\n"
+		"out vec2 texture_coordinates;\n"
 
 		"void main()\n"
 		"{\n"
 		"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n"
 		"ourColor = aColor;\n"
-		"stone_texture_out = aTexCoordinates;"
+		"texture_coordinates = aTexCoordinates;"
 		"}\0";
 
 	unsigned int triangles_shader_obj;
@@ -160,8 +197,11 @@ int main() {
 	const char* fragment_shader = "#version 330 core\n"
 		"out vec4 fragment_data;\n"
 		"in vec3 ourColor;\n"
-		"in vec2 stone_texture_out; \n"
-		"uniform sampler2D our_texture;\n"
+		"in vec2 texture_coordinates; \n"
+
+
+		"uniform sampler2D our_stone_texture;\n"
+		"uniform sampler2D our_graffiti_texture; \n"
 		/*
 		 GLSL has a built-in data-type for texture objects called
 		a sampler that takes as a postfix the texture type we want e.g. sampler1D, sampler3D or in
@@ -170,7 +210,7 @@ int main() {
 		*/
 		"void main() \n"
 		"{\n"
-		"fragment_data = texture(our_texture, stone_texture_out);\n"
+		"fragment_data = mix(texture(our_stone_texture, texture_coordinates),texture(our_graffiti_texture, texture_coordinates), 0.2);\n"
 		"}\0";
 
 	unsigned int fragment_shader_object;
@@ -193,9 +233,12 @@ int main() {
 	glLinkProgram(shader_program); // links the vertex and fragment shaders
 
 	int program_status;
+	char info_log[512];
 	glGetProgramiv(shader_program, GL_LINK_STATUS, &program_status);
 	if (!program_status) {
-		std::cout << "Failed To Link Shaders";
+		glGetProgramInfoLog(shader_program, 512, NULL, info_log);
+		std::cout << "Failed To Link Shaders" <<
+			info_log << std::endl;
 		glfwTerminate();
 	}
 	//We dont need out shader objects anymore
@@ -205,11 +248,16 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
+
+	glUseProgram(shader_program);
+	glUniform1i(glGetUniformLocation(shader_program, "our_stone_texture"), 0);
+	glUniform1i(glGetUniformLocation(shader_program, "our_graffiti_texture"), 1);
+
 
 	while (!glfwWindowShouldClose(window)) {
 		user_close_input(window);
@@ -219,8 +267,13 @@ int main() {
 
 
 		glUseProgram(shader_program);
-		
+
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, stone_texture_object);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, graffiti_texture_object);
+
 		glBindVertexArray(VAO); //why do it a second time in our render loop?
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
