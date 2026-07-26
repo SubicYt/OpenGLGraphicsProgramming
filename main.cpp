@@ -11,6 +11,9 @@ When chapter 1 is finished start optimizing the structure of this code base
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 //instantiate a GLFW Window()
 #pragma comment(lib, "glfw3.lib")
@@ -108,7 +111,6 @@ int main() {
 	//we dont need our texture_data anymore
 	stbi_image_free(stone_texture_data);
 	
-	
 	//Setup texture number 2
 	int graf_width, graf_height, graf_nr_num;
 	unsigned char* graf_image_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\apocalyse.png",
@@ -119,8 +121,7 @@ int main() {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
-
-	stbi_set_flip_vertically_on_load(true); //flip image about x axis
+ //flip image about x axis
 
 	unsigned int graffiti_texture_object;
 	glGenTextures(1, &graffiti_texture_object);
@@ -163,6 +164,14 @@ int main() {
 	//^^^Copy our triange_verticies into our GL_ARRAY_BUFFER, set it to a GL_STATIC_DRAW;
 
 	//setup our vertex shader
+
+	/*
+	transformation for our object
+	*/
+	glm::mat4 transform = glm::mat4(1.0f); // set transform to be 4x4 identity matrix
+	transform = glm::rotate(transform, glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
+
+	//pass the transformation matrix to the shaders
 	const char* vertex_shader = "#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
 		"layout (location = 1) in vec3 aColor; \n"
@@ -170,13 +179,14 @@ int main() {
 
 		"out vec3 ourColor;\n"
 		"out vec2 texture_coordinates;\n"
-
+		"uniform mat4 transformation;\n" //4x4 matrix uniform used for a transformation
 		"void main()\n"
 		"{\n"
-		"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n"
+		"gl_Position = transformation * vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n" //90 degree transformation of the positoin
 		"ourColor = aColor;\n"
 		"texture_coordinates = aTexCoordinates;"
 		"}\0";
+
 
 	unsigned int triangles_shader_obj;
 	triangles_shader_obj = glCreateShader(GL_VERTEX_SHADER);
@@ -211,7 +221,7 @@ int main() {
 		*/
 		"void main() \n"
 		"{\n"
-		"fragment_data = mix(texture(our_stone_texture, texture_coordinates),texture(our_graffiti_texture, texture_coordinates), 0.2);\n"
+		"fragment_data = mix(texture(our_stone_texture, texture_coordinates),texture(our_graffiti_texture, texture_coordinates), 0.35);\n"
 		"}\0";
 
 	unsigned int fragment_shader_object;
@@ -259,6 +269,9 @@ int main() {
 	glUniform1i(glGetUniformLocation(shader_program, "our_stone_texture"), 0); // specify which texture unit belongs to which shader sampler 
 	glUniform1i(glGetUniformLocation(shader_program, "our_graffiti_texture"), 1); //specify which texture unit belongs to which shader sampler 
 
+	//pass transformation matrix to the shader
+	unsigned int transformLocation = glGetUniformLocation(shader_program, "transformation");
+	glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
 
 	while (!glfwWindowShouldClose(window)) {
 		user_close_input(window);
@@ -273,6 +286,7 @@ int main() {
 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, graffiti_texture_object);
+		stbi_set_flip_vertically_on_load(true);
 
 		glBindVertexArray(VAO); //why do it a second time in our render loop?
 		glDrawArrays(GL_TRIANGLES, 0, 6);
