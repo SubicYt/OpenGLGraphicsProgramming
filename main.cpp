@@ -165,11 +165,14 @@ int main() {
 
 	//setup our vertex shader
 
+
 	/*
-	transformation for our object
+	transformation data for our object
 	*/
-	glm::mat4 transform = glm::mat4(1.0f); // set transform to be 4x4 identity matrix
-	transform = glm::rotate(transform, glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
+	glm::mat4 transformation = glm::mat4(1.0f);
+	transformation = glm::rotate(transformation, glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
+	transformation = glm::scale(transformation, glm::vec3(1.5, 1.5, 1.5));
+	
 
 	//pass the transformation matrix to the shaders
 	const char* vertex_shader = "#version 330 core\n"
@@ -179,10 +182,10 @@ int main() {
 
 		"out vec3 ourColor;\n"
 		"out vec2 texture_coordinates;\n"
-		"uniform mat4 transformation;\n" //4x4 matrix uniform used for a transformation
+		"uniform mat4 rotation_transformation;\n"//4x4 matrix uniform used for a transformation
 		"void main()\n"
 		"{\n"
-		"gl_Position = transformation * vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n" //90 degree transformation of the positoin
+		"gl_Position = rotation_transformation * vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n" //90 degree transformation of the positoin
 		"ourColor = aColor;\n"
 		"texture_coordinates = aTexCoordinates;"
 		"}\0";
@@ -270,9 +273,11 @@ int main() {
 	glUniform1i(glGetUniformLocation(shader_program, "our_graffiti_texture"), 1); //specify which texture unit belongs to which shader sampler 
 
 	//pass transformation matrix to the shader
-	unsigned int transformLocation = glGetUniformLocation(shader_program, "transformation");
-	glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
-
+	//last param is the actual transformation data
+	//we do this with glUnifromMatrix4fv
+	unsigned int transformation_uniform_location = glGetUniformLocation(shader_program, "rotation_transformation");
+	glUniformMatrix4fv(transformation_uniform_location, 1, GL_FALSE, glm::value_ptr(transformation));
+	
 	while (!glfwWindowShouldClose(window)) {
 		user_close_input(window);
 

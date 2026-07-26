@@ -65,6 +65,9 @@ The location of said texture is the "texture unit";
 		-We can bind to multiple textures at once as long as we activate the corresponding texutre unit first
 		- We do this with glActiveTexture(GL_TEXTURE(N)); //start N at zero for first texutre
 		- After calling glActiveTexture then we call for a glBindTexture;
+When using texture units keep in mind the following:
+	each new texture must be loaded and the parameters must be set. Each new texture also must be "binded"
+	
 
 
 LOADING TEXTURES:
