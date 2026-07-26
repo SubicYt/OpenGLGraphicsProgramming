@@ -1,10 +1,9 @@
 /*
 TODO:
-implement a texture unit?
+implement a texture unit? ----> success
 Transformations and Coordinate systems
 When chapter 1 is finished start optimizing the structure of this code base
 */
-
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -109,7 +108,8 @@ int main() {
 	//we dont need our texture_data anymore
 	stbi_image_free(stone_texture_data);
 	
-
+	
+	//Setup texture number 2
 	int graf_width, graf_height, graf_nr_num;
 	unsigned char* graf_image_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\apocalyse.png",
 		&graf_width, &graf_height, &graf_nr_num, 0);
@@ -119,6 +119,7 @@ int main() {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
+
 	stbi_set_flip_vertically_on_load(true); //flip image about x axis
 
 	unsigned int graffiti_texture_object;
@@ -254,9 +255,9 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	glUseProgram(shader_program);
-	glUniform1i(glGetUniformLocation(shader_program, "our_stone_texture"), 0);
-	glUniform1i(glGetUniformLocation(shader_program, "our_graffiti_texture"), 1);
+	glUseProgram(shader_program); // make sure to specify program used
+	glUniform1i(glGetUniformLocation(shader_program, "our_stone_texture"), 0); // specify which texture unit belongs to which shader sampler 
+	glUniform1i(glGetUniformLocation(shader_program, "our_graffiti_texture"), 1); //specify which texture unit belongs to which shader sampler 
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -264,7 +265,6 @@ int main() {
 
 		glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
 
 		glUseProgram(shader_program);
 
