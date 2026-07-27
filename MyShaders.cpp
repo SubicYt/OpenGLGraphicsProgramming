@@ -95,3 +95,45 @@ unsigned int set_shader_program(unsigned int vertex_shader, unsigned int fragmen
 	glDeleteShader(fragment_shader);
 	return shader_program;
 }
+
+const char* get_vertex_shader() {
+	const char* vertex_shader =  "#version 330 core\n"
+		"layout (location = 0) in vec3 aPos;\n"
+		"layout (location = 1) in vec3 aColor; \n"
+		"layout (location = 2) in vec2 aTexCoordinates; \n"
+
+		"out vec3 ourColor;\n"
+		"out vec2 texture_coordinates;\n"
+		"uniform mat4 rotation_transformation;\n"//4x4 matrix uniform used for a transformation
+		"void main()\n"
+		"{\n"
+		"gl_Position = rotation_transformation * vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n" //90 degree transformation of the positoin
+		"ourColor = aColor;\n"
+		"texture_coordinates = aTexCoordinates;"
+		"}\0";
+
+	return vertex_shader;
+}
+
+const char* get_fragment_shader() {
+	const char* fragment_shader = "#version 330 core\n"
+		"out vec4 fragment_data;\n"
+		"in vec3 ourColor;\n"
+		"in vec2 texture_coordinates; \n"
+
+
+		"uniform sampler2D our_stone_texture;\n"
+		"uniform sampler2D our_graffiti_texture; \n"
+		/*
+		 GLSL has a built-in data-type for texture objects called
+		a sampler that takes as a postfix the texture type we want e.g. sampler1D, sampler3D or in
+		our case sampler2D. We can then add a texture to the fragment shader by simply declaring a
+		uniform sampler2D that we later assign our texture to.
+		*/
+		"void main() \n"
+		"{\n"
+		"fragment_data = mix(texture(our_stone_texture, texture_coordinates),texture(our_graffiti_texture, texture_coordinates), 0.35);\n"
+		"}\0";
+
+	return fragment_shader;
+}
