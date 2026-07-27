@@ -16,6 +16,7 @@
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "shell32.lib")
 
+
 unsigned int configure_texture(const char file_name[600]){
 	int width, height, nr_channels;
 	unsigned int texture_object;
@@ -121,7 +122,6 @@ const char* get_fragment_shader() {
 		"in vec3 ourColor;\n"
 		"in vec2 texture_coordinates; \n"
 
-
 		"uniform sampler2D our_stone_texture;\n"
 		"uniform sampler2D our_graffiti_texture; \n"
 		/*
@@ -136,4 +136,15 @@ const char* get_fragment_shader() {
 		"}\0";
 
 	return fragment_shader;
+}
+
+void enable_vertexAttrib_ptrs() {
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 }

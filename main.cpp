@@ -138,14 +138,7 @@ int main() {
 	shader_program = set_shader_program(triangles_shader_obj, fragment_shader_object);
 	
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	enable_vertexAttrib_ptrs(); // see MyShaders src file
 
 	glUseProgram(shader_program); // make sure to specify program used
 	glUniform1i(glGetUniformLocation(shader_program, "our_stone_texture"), 0); // specify which texture unit belongs to which shader sampler 
@@ -170,7 +163,6 @@ int main() {
 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, graffiti_texture_object);
-		stbi_set_flip_vertically_on_load(true);
 
 		glBindVertexArray(VAO); //why do it a second time in our render loop?
 		glDrawArrays(GL_TRIANGLES, 0, 6);
