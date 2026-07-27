@@ -24,6 +24,9 @@
     <ClCompile Include="IncludeImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MyShaders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="GLSLnotes.txt">
@@ -40,9 +43,15 @@
     </Text>
     <Text Include="shadersNotes.txt" />
     <Text Include="Textures.txt" />
+    <Text Include="CoordinateSystems.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\Downloads\stonetiles_003_diff.jpg" />
     <Image Include="apocalyse.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MyShaders.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

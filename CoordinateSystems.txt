@@ -1,0 +1,7 @@
+There are a total of 5 different coordinate systems that are of importance to us:
+• Local space (or Object space)
+• World space
+• View space (or Eye space)
+• Clip space
+• Screen space
+

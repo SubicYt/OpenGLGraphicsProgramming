@@ -14,6 +14,8 @@ When chapter 1 is finished start optimizing the structure of this code base
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "MyShaders.h"
+
 
 //instantiate a GLFW Window()
 #pragma comment(lib, "glfw3.lib")
@@ -72,71 +74,21 @@ int main() {
 
 	glfwSetFramebufferSizeCallback(window, Framebuffer_Set_Callback); 
 	/*
-	This function sets the framebuffer resize callback of the specified window, 
+	This function ABOVE sets the framebuffer resize callback of the specified window, 
 	which is called when the framebuffer of the specified window is resized.
-	*/
-
-	/*
-	Begin OpenGL Triangle rendering here:
 	*/
 
 
 	/*
 	THE FOLLOWING SPECIFIED SECTION OF CODE IS MEANT FOR LOADING TEXTURES:
 	*/
-	int stone_width, stone_height, stone_nr_num;
-	unsigned char* stone_texture_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\stonetiles_003_diff.jpg", 
-												&stone_width, &stone_height, &stone_nr_num, 0);
+	char stone_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\stonetiles_003_diff.jpg";
+	char graffiti_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\apocalyse.png";
 
-	if (!stone_texture_data) {
-		std::cout << "failed to load texture data";
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
-	//bind our texture to a Gl_TEXTURE_2D
-	unsigned int stone_texture_object;
-	glGenTextures(1, &stone_texture_object);
-	//set our parameters
-	glBindTexture(GL_TEXTURE_2D, stone_texture_object);
-	//specify our texture wrap along the s and t axis 
-	//specify how we want to filter our magnifying and minimal filter (I used a gl_linear for a more realistic look)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//Fill in our GL_TEXTURE_2D with our image data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, stone_width, stone_height, 0, GL_RGB, GL_UNSIGNED_BYTE, stone_texture_data);
-	//finally generate mipmaps
-	glGenerateMipmap(stone_texture_object);
-	//we dont need our texture_data anymore
-	stbi_image_free(stone_texture_data);
-	
+	//Setup texture number 1
+	unsigned int stone_texture_object = configure_texture(stone_texture_file_path);
 	//Setup texture number 2
-	int graf_width, graf_height, graf_nr_num;
-	unsigned char* graf_image_data = stbi_load("C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\apocalyse.png",
-		&graf_width, &graf_height, &graf_nr_num, 0);
-
-	if (!graf_image_data) {
-		std::cout << "failed to load graffiti image data";
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
- //flip image about x axis
-
-	unsigned int graffiti_texture_object;
-	glGenTextures(1, &graffiti_texture_object);
-	//Bind texture again
-	glBindTexture(GL_TEXTURE_2D, graffiti_texture_object);
-	//specify params
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, graf_width, graf_height, 0, GL_RGB, GL_UNSIGNED_BYTE, graf_image_data);
-	//gen mipmaps
-	glGenerateMipmap(graffiti_texture_object);
-	//free data
-	stbi_image_free(graf_image_data);
+	unsigned int graffiti_texture_object = configure_texture(graffiti_texture_file_path);
 	
 
 	float triangle_verticies[] = {
@@ -172,10 +124,8 @@ int main() {
 	glm::mat4 transformation = glm::mat4(1.0f);
 	transformation = glm::rotate(transformation, glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
 	transformation = glm::scale(transformation, glm::vec3(1.5, 1.5, 1.5));
-	
 
-	//pass the transformation matrix to the shaders
-	const char* vertex_shader = "#version 330 core\n"
+	const char* vertex_shader_source_code = "#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
 		"layout (location = 1) in vec3 aColor; \n"
 		"layout (location = 2) in vec2 aTexCoordinates; \n"
@@ -190,25 +140,11 @@ int main() {
 		"texture_coordinates = aTexCoordinates;"
 		"}\0";
 
-
-	unsigned int triangles_shader_obj;
-	triangles_shader_obj = glCreateShader(GL_VERTEX_SHADER);
-	//next bind our GLSL source code to the shader object
-	glShaderSource(triangles_shader_obj, 1, &vertex_shader, NULL); //rmr for now set len param to NULl
-	//compile our shader
-	glCompileShader(triangles_shader_obj);
-	//check for a successful shader compile
-	int vertex_shader_status;
-	glGetShaderiv(triangles_shader_obj, GL_COMPILE_STATUS, &vertex_shader_status);
-
-	if (!vertex_shader_status) {
-		std::cout << "vertex shader failed to compile";
-		glfwTerminate();
-	}
+	unsigned int triangles_shader_obj = set_vertex_shader(vertex_shader_source_code);
 
 	//Next we create the fragment shader
 	
-	const char* fragment_shader = "#version 330 core\n"
+	const char* fragment_shader_source_code = "#version 330 core\n"
 		"out vec4 fragment_data;\n"
 		"in vec3 ourColor;\n"
 		"in vec2 texture_coordinates; \n"
@@ -227,37 +163,12 @@ int main() {
 		"fragment_data = mix(texture(our_stone_texture, texture_coordinates),texture(our_graffiti_texture, texture_coordinates), 0.35);\n"
 		"}\0";
 
-	unsigned int fragment_shader_object;
-	fragment_shader_object = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader_object, 1, &fragment_shader, NULL);
-	glCompileShader(fragment_shader_object);
-
-	int fragment_shader_status;
-	glGetShaderiv(fragment_shader_object, GL_COMPARE_REF_TO_TEXTURE, &fragment_shader_status);
-	if (!fragment_shader_status) {
-		std::cout << "failed to compile fragment shader";
-		glfwTerminate();
-	}
+	unsigned int fragment_shader_object = set_fragment_shader(fragment_shader_source_code);
 	
 	//Now we must create a shader program and link the shaders
 	unsigned int shader_program;
-	shader_program = glCreateProgram();
-	glAttachShader(shader_program, triangles_shader_obj);
-	glAttachShader(shader_program, fragment_shader_object);
-	glLinkProgram(shader_program); // links the vertex and fragment shaders
-
-	int program_status;
-	char info_log[512];
-	glGetProgramiv(shader_program, GL_LINK_STATUS, &program_status);
-	if (!program_status) {
-		glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-		std::cout << "Failed To Link Shaders" <<
-			info_log << std::endl;
-		glfwTerminate();
-	}
-	//We dont need out shader objects anymore
-	glDeleteShader(triangles_shader_obj);
-	glDeleteShader(fragment_shader_object);
+	shader_program = set_shader_program(triangles_shader_obj, fragment_shader_object);
+	
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
