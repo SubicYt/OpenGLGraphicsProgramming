@@ -100,16 +100,16 @@ unsigned int set_shader_program(unsigned int vertex_shader, unsigned int fragmen
 const char* get_vertex_shader() {
 	const char* vertex_shader =  "#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
-		"layout (location = 1) in vec3 aColor; \n"
-		"layout (location = 2) in vec2 aTexCoordinates; \n"
+		"layout (location = 1) in vec2 aTexCoordinates; \n"
 
-		"out vec3 ourColor;\n"
 		"out vec2 texture_coordinates;\n"
 		"uniform mat4 rotation_transformation;\n"//4x4 matrix uniform used for a transformation
+		"uniform mat4 model_matrix;\n"
+		"uniform mat4 view_matrix;\n"
+		"uniform mat4 perspective_proj_matrix; \n"
 		"void main()\n"
 		"{\n"
-		"gl_Position = rotation_transformation * vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n" //90 degree transformation of the positoin
-		"ourColor = aColor;\n"
+		"gl_Position = perspective_proj_matrix * view_matrix * model_matrix *  vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n" // transformation of the positoin
 		"texture_coordinates = aTexCoordinates;"
 		"}\0";
 
@@ -119,7 +119,6 @@ const char* get_vertex_shader() {
 const char* get_fragment_shader() {
 	const char* fragment_shader = "#version 330 core\n"
 		"out vec4 fragment_data;\n"
-		"in vec3 ourColor;\n"
 		"in vec2 texture_coordinates; \n"
 
 		"uniform sampler2D our_stone_texture;\n"
@@ -139,12 +138,9 @@ const char* get_fragment_shader() {
 }
 
 void enable_vertexAttrib_ptrs() {
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 }

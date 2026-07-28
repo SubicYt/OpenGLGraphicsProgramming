@@ -1,8 +1,7 @@
 /*
 TODO:
-implement a texture unit? ----> success
-Transformations and Coordinate systems
-When chapter 1 is finished start optimizing the structure of this code base
+Coordinate Systems
+Camera implementations
 */
 
 #include <glad/glad.h>
@@ -94,14 +93,44 @@ int main() {
 	float triangle_verticies[] = {
 		//first triangle 
 		//formatting of the following bytes:
-		//first 3 - position, second 3 - color, last 2 - texutre coords
-		-0.5f, -0.5f, 0.0f, 1.0f, 0.3f, 0.5f, 0.0f, 0.0f,//bottom left
-		-0.5f, 0.5f, 0.0f, 0.4f, 0.2f, 0.6f, 0.0f, 1.0f, //top left
-		0.5f, -0.5f, 0.0f, 0.7f, 0.9f, 0.6f, 1.0f, 0.0f, // bottom right 
-
-		-0.5f, 0.5f, 0.0f, 0.7f, 0.9f, 0.6f, 0.0f, 1.0f, //top left
-		0.5f, 0.5f, 0.0f, 0.4f, 0.7f, 0.8f, 1.0f, 1.0f, //top right
-		0.5f, -0.5f, 0.0f, 0.7f, 0.9f, 0.6f, 1.0f, 0.0f // bottom right
+		//first 3 - position, last 2 - texutre coords
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		- 0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+		//cube
 	};
 	
 	unsigned int VAO; //vector array object
@@ -121,10 +150,36 @@ int main() {
 	/*
 	transformation data for our object
 	*/
+
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f, 0.0f, 0.0f),
+	glm::vec3(2.0f, 5.0f, -15.0f),
+	glm::vec3(-1.5f, -2.2f, -2.5f),
+	glm::vec3(-3.8f, -2.0f, -12.3f),
+	glm::vec3(2.4f, -0.4f, -3.5f),
+	glm::vec3(-1.7f, 3.0f, -7.5f),
+	glm::vec3(1.3f, -2.0f, -2.5f),
+	glm::vec3(1.5f, 2.0f, -2.5f),
+	glm::vec3(1.5f, 0.2f, -1.5f),
+	glm::vec3(-1.3f, 1.0f, -1.5f)
+	};
+
 	glm::mat4 transformation = glm::mat4(1.0f);
-	transformation = glm::rotate(transformation, glm::radians(180.0f), glm::vec3(0.0, 0.0, 1.0));
+	transformation = glm::rotate(transformation, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
 	transformation = glm::scale(transformation, glm::vec3(1.5, 1.5, 1.5));
+	 //model_matrix is included in render loop
 	
+	//next create a view matrix and move slightly backward to object is visible
+	//this means to move the entire scene forwards (move it along the negative z axis)
+	glm::mat4 view_matrix = glm::mat4(1.0f);
+	view_matrix = glm::translate(view_matrix, glm::vec3(0.0, 0.0, -3.0f));
+	
+	//finally we must create our perspective projection matrix
+	glm::mat4 perspective_proj_matrix = glm::mat4(1.0f);
+	//width and height are just going to correspond with my viewport
+	perspective_proj_matrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+
 	//first get and configure the vertex shader
 	const char* vertex_shader_source_code = get_vertex_shader();
 	unsigned int triangles_shader_obj = set_vertex_shader(vertex_shader_source_code);
@@ -132,7 +187,7 @@ int main() {
 	//Next we create and configure the fragment shader
 	const char* fragment_shader_source_code = get_fragment_shader();
 	unsigned int fragment_shader_object = set_fragment_shader(fragment_shader_source_code);
-	
+	 
 	//Now we must create a shader program and link the shaders
 	unsigned int shader_program;
 	shader_program = set_shader_program(triangles_shader_obj, fragment_shader_object);
@@ -141,8 +196,11 @@ int main() {
 	enable_vertexAttrib_ptrs(); // see MyShaders src file
 
 	glUseProgram(shader_program); // make sure to specify program used
-	glUniform1i(glGetUniformLocation(shader_program, "our_stone_texture"), 0); // specify which texture unit belongs to which shader sampler 
-	glUniform1i(glGetUniformLocation(shader_program, "our_graffiti_texture"), 1); //specify which texture unit belongs to which shader sampler 
+	unsigned int stone_texture_loc = glGetUniformLocation(shader_program, "our_stone_texture");
+	unsigned int graffiti_texture_loc = glGetUniformLocation(shader_program, "our_graffiti_texture");
+
+	glUniform1i(stone_texture_loc, 0); // specify which texture unit belongs to which shader sampler 
+	glUniform1i(graffiti_texture_loc, 1); //specify which texture unit belongs to which shader sampler 
 
 	//pass transformation matrix to the shader
 	//last param is the actual transformation data
@@ -150,11 +208,20 @@ int main() {
 	unsigned int transformation_uniform_location = glGetUniformLocation(shader_program, "rotation_transformation");
 	glUniformMatrix4fv(transformation_uniform_location, 1, GL_FALSE, glm::value_ptr(transformation));
 	
+
+	unsigned int view_matrix_loc = glGetUniformLocation(shader_program, "view_matrix");
+	glUniformMatrix4fv(view_matrix_loc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+
+	unsigned int perspective_matrix_loc = glGetUniformLocation(shader_program, "perspective_proj_matrix");
+	glUniformMatrix4fv(perspective_matrix_loc, 1, GL_FALSE, glm::value_ptr(perspective_proj_matrix));
+
+
 	while (!glfwWindowShouldClose(window)) {
 		user_close_input(window);
+		glEnable(GL_DEPTH_TEST);
 
 		glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(shader_program);
 
@@ -165,7 +232,22 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, graffiti_texture_object);
 
 		glBindVertexArray(VAO); //why do it a second time in our render loop?
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//INCLUDE THIS IN MAIN RENDER LOOP TO UPDATE EACH FRAME
+		//*************************************************************************************************************
+
+		for (int i = 0; i < 10; i++) {
+			glm::mat4 model_matrix = glm::mat4(1.0f);
+			model_matrix = glm::translate(model_matrix, cubePositions[i]);
+			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * glm::radians(-55.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+
+			unsigned int model_matrix_location = glGetUniformLocation(shader_program, "model_matrix");
+			glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		//*************************************************************************************************************
+
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
