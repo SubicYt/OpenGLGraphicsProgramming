@@ -237,8 +237,10 @@ int main() {
 
 		for (int i = 0; i < 10; i++) {
 			glm::mat4 model_matrix = glm::mat4(1.0f);
+			float angle_of_rotation = 33.0f * i; // just to have different object positioned differently around the scene
 			model_matrix = glm::translate(model_matrix, cubePositions[i]);
-			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * glm::radians(-55.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+
+			model_matrix = glm::rotate(model_matrix, angle_of_rotation * glm::radians(-55.0f), glm::vec3(1.0f, 0.3f, 0.5f));
 
 			unsigned int model_matrix_location = glGetUniformLocation(shader_program, "model_matrix");
 			glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
@@ -246,8 +248,6 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		//*************************************************************************************************************
-
-
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
