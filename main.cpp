@@ -51,7 +51,7 @@ int main() {
 	else {
 		std::cout << "success" << std::endl;
 	}
-	
+
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //specify we are using core profile
@@ -64,16 +64,16 @@ int main() {
 	}
 
 	glfwMakeContextCurrent(window);
-	
+
 	//before calling any opengl functions we must initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "failed to initialize GLAD" << std::endl;
 		glfwTerminate();
 	}
 
-	glfwSetFramebufferSizeCallback(window, Framebuffer_Set_Callback); 
+	glfwSetFramebufferSizeCallback(window, Framebuffer_Set_Callback);
 	/*
-	This function ABOVE sets the framebuffer resize callback of the specified window, 
+	This function ABOVE sets the framebuffer resize callback of the specified window,
 	which is called when the framebuffer of the specified window is resized.
 	*/
 
@@ -88,7 +88,7 @@ int main() {
 	unsigned int stone_texture_object = configure_texture(stone_texture_file_path);
 	//Setup texture number 2
 	unsigned int graffiti_texture_object = configure_texture(graffiti_texture_file_path);
-	
+
 
 	float triangle_verticies[] = {
 		//first triangle 
@@ -98,7 +98,7 @@ int main() {
 		0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
 		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
 		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-		- 0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
 		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
@@ -132,27 +132,26 @@ int main() {
 		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 		//cube
 	};
-	
+
 	unsigned int VAO; //vector array object
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO); //We now binded out vertex array object to be VAO
-	
+
 	//Create a Vertex Buffer Object
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); //Assign GL_ARRAY_BUFFER, our VBO
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_verticies), &triangle_verticies, GL_STATIC_DRAW); 
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_verticies), &triangle_verticies, GL_STATIC_DRAW);
 	//^^^Copy our triange_verticies into our GL_ARRAY_BUFFER, set it to a GL_STATIC_DRAW;
 
 	//setup our vertex shader
-
 
 	/*
 	transformation data for our object
 	*/
 
 	glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(4.0f, 0.5f, 9.0f),
 	glm::vec3(2.0f, 5.0f, -15.0f),
 	glm::vec3(-1.5f, -2.2f, -2.5f),
 	glm::vec3(-3.8f, -2.0f, -12.3f),
@@ -167,18 +166,17 @@ int main() {
 	glm::mat4 transformation = glm::mat4(1.0f);
 	transformation = glm::rotate(transformation, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
 	transformation = glm::scale(transformation, glm::vec3(1.5, 1.5, 1.5));
-	 //model_matrix is included in render loop
-	
-	//next create a view matrix and move slightly backward to object is visible
-	//this means to move the entire scene forwards (move it along the negative z axis)
+	//model_matrix is included in render loop
+
+   //next create a view matrix and move slightly backward to object is visible
+   //this means to move the entire scene forwards (move it along the negative z axis)
 	glm::mat4 view_matrix = glm::mat4(1.0f);
 	view_matrix = glm::translate(view_matrix, glm::vec3(0.0, 0.0, -3.0f));
-	
+
 	//finally we must create our perspective projection matrix
 	glm::mat4 perspective_proj_matrix = glm::mat4(1.0f);
 	//width and height are just going to correspond with my viewport
 	perspective_proj_matrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
 
 	//first get and configure the vertex shader
 	const char* vertex_shader_source_code = get_vertex_shader();
@@ -187,11 +185,11 @@ int main() {
 	//Next we create and configure the fragment shader
 	const char* fragment_shader_source_code = get_fragment_shader();
 	unsigned int fragment_shader_object = set_fragment_shader(fragment_shader_source_code);
-	 
+
 	//Now we must create a shader program and link the shaders
 	unsigned int shader_program;
 	shader_program = set_shader_program(triangles_shader_obj, fragment_shader_object);
-	
+
 
 	enable_vertexAttrib_ptrs(); // see MyShaders src file
 
@@ -207,10 +205,6 @@ int main() {
 	//we do this with glUnifromMatrix4fv
 	unsigned int transformation_uniform_location = glGetUniformLocation(shader_program, "rotation_transformation");
 	glUniformMatrix4fv(transformation_uniform_location, 1, GL_FALSE, glm::value_ptr(transformation));
-	
-
-	unsigned int view_matrix_loc = glGetUniformLocation(shader_program, "view_matrix");
-	glUniformMatrix4fv(view_matrix_loc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 
 	unsigned int perspective_matrix_loc = glGetUniformLocation(shader_program, "perspective_proj_matrix");
 	glUniformMatrix4fv(perspective_matrix_loc, 1, GL_FALSE, glm::value_ptr(perspective_proj_matrix));
@@ -235,12 +229,21 @@ int main() {
 		//INCLUDE THIS IN MAIN RENDER LOOP TO UPDATE EACH FRAME
 		//*************************************************************************************************************
 
+		//DEFINE CAMERA POSITIONS BELOW
+		float rotation_radius = 10.0f;
+		float cam_x = sin(glfwGetTime()) * rotation_radius;
+		float cam_z = cos(glfwGetTime()) * rotation_radius;
+		glm::mat4 view_matrix = glm::lookAt(glm::vec3(cam_x, 0.0f, cam_z),
+			glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		unsigned int view_matrix_location = glGetUniformLocation(shader_program, "view_matrix");
+		glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, glm::value_ptr(view_matrix));
+
 		for (int i = 0; i < 10; i++) {
 			glm::mat4 model_matrix = glm::mat4(1.0f);
 			float angle_of_rotation = 33.0f * i; // just to have different object positioned differently around the scene
 			model_matrix = glm::translate(model_matrix, cubePositions[i]);
 
-			model_matrix = glm::rotate(model_matrix, angle_of_rotation * glm::radians(-55.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * 0.009f * angle_of_rotation * glm::radians(-55.0f), glm::vec3(1.0f, 0.3f, 0.5f));
 
 			unsigned int model_matrix_location = glGetUniformLocation(shader_program, "model_matrix");
 			glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(model_matrix));

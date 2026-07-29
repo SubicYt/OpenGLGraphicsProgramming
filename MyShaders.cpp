@@ -131,7 +131,7 @@ const char* get_fragment_shader() {
 		*/
 		"void main() \n"
 		"{\n"
-		"fragment_data = mix(texture(our_stone_texture, texture_coordinates),texture(our_graffiti_texture, texture_coordinates), 0.35);\n"
+		"fragment_data = mix(texture(our_stone_texture, texture_coordinates),texture(our_graffiti_texture, texture_coordinates), 0.2);\n"
 		"}\0";
 
 	return fragment_shader;
