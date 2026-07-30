@@ -41,8 +41,9 @@ glm::vec3 camera_front_position = glm::vec3(0.0, 0.0, -1.0f); //remember opengl 
 glm::vec3 camera_up_axis = glm::vec3(0.0, 1.0f, 0.0f);
 float delta_time = 0.0f; //time between current frame and last frame
 float lastFrame = 0.0f; //Time of last frame
-
-
+float yaw = -90.0f;
+float pitch = 0.0f; 
+float lastX = 400, lastY = 300; //sets intial mouse coordinates to center of screen
 
 void Framebuffer_Set_Callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -54,7 +55,7 @@ void user_close_input(GLFWwindow* window) {
 	}
 }
 
-void get_key_press(GLFWwindow* window) {
+void get_usr_movement_info(GLFWwindow* window) {
 
 	float current_frame = glfwGetTime();
 	delta_time = current_frame - lastFrame;
@@ -74,6 +75,40 @@ void get_key_press(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		camera_position += glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed);
 	}
+
+}
+
+void mouse_callback(GLFWwindow* window, double x_pos, double y_pos) {
+	//here x_pos and y_pos are the current mouse positions
+	//they get updated in the glfwSetMousePosCallback()
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//calculate mouse offset since last frame;
+	float xoffset = x_pos - lastX;
+	float yoffset = y_pos - lastY;
+	lastX = x_pos;
+	lastY = y_pos;
+
+	const float mouse_sens = 0.05f;
+	xoffset *= mouse_sens;
+	yoffset *= mouse_sens;
+
+	yaw += xoffset;
+	pitch += yoffset;
+	
+	//set a hard cap to pitch values
+	if (pitch > 89.0f) {
+		pitch = 89.0f;
+	}
+	if (pitch < -89.0f) {
+		pitch = -89.0f;
+	}
+
+	//update camera direction
+	camera_front_position.x = cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
+	camera_front_position.y = sin(glm::radians(pitch));
+	camera_front_position.z = sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
+	
+	glm::normalize(camera_front_position);
 }
 
 int main() {
@@ -234,7 +269,7 @@ int main() {
 	glUniform1i(graffiti_texture_loc, 1); //specify which texture unit belongs to which shader sampler 
 
 	//pass transformation matrix to the shader
-	//last param is the actual transformation data
+	//last param is the actual transformation datad
 	//we do this with glUnifromMatrix4fv
 	unsigned int transformation_uniform_location = glGetUniformLocation(shader_program, "rotation_transformation");
 	glUniformMatrix4fv(transformation_uniform_location, 1, GL_FALSE, glm::value_ptr(transformation));
@@ -245,7 +280,9 @@ int main() {
 
 	while (!glfwWindowShouldClose(window)) {
 		user_close_input(window);
-		get_key_press(window);
+		get_usr_movement_info(window);
+		glfwSetCursorPosCallback(window, mouse_callback);
+		
 		glEnable(GL_DEPTH_TEST);
 
 		glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
@@ -275,9 +312,7 @@ int main() {
 			glm::mat4 model_matrix = glm::mat4(1.0f);
 			float angle_of_rotation = 33.0f * i; // just to have different object positioned differently around the scene
 			model_matrix = glm::translate(model_matrix, cubePositions[i]);
-
-			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * 0.009f * angle_of_rotation * glm::radians(-55.0f), glm::vec3(1.0f, 0.3f, 0.5f));
-
+			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * angle_of_rotation * 0.009f, glm::vec3(0.0f, 0.0f, 1.0f));
 			unsigned int model_matrix_location = glGetUniformLocation(shader_program, "model_matrix");
 			glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
