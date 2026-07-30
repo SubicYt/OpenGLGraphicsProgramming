@@ -70,11 +70,12 @@ void get_usr_movement_info(GLFWwindow* window) {
 		camera_position -= camera_speed * camera_front_position;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera_position -= glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed);
+		camera_position -= glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed) * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera_position += glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed);
+		camera_position += glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed) * 0.05f;
 	}
+
 
 }
 
@@ -82,9 +83,12 @@ void mouse_callback(GLFWwindow* window, double x_pos, double y_pos) {
 	//here x_pos and y_pos are the current mouse positions
 	//they get updated in the glfwSetMousePosCallback()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+	}
 	//calculate mouse offset since last frame;
 	float xoffset = x_pos - lastX;
-	float yoffset = y_pos - lastY;
+	float yoffset = lastY- y_pos;
 	lastX = x_pos;
 	lastY = y_pos;
 
@@ -104,11 +108,11 @@ void mouse_callback(GLFWwindow* window, double x_pos, double y_pos) {
 	}
 
 	//update camera direction
-	camera_front_position.x = cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-	camera_front_position.y = sin(glm::radians(pitch));
-	camera_front_position.z = sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-	
-	glm::normalize(camera_front_position);
+	glm::vec3 camera_direction;
+	camera_direction.x = cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
+	camera_direction.y = sin(glm::radians(pitch));
+	camera_direction.z = sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
+	camera_front_position = glm::normalize(camera_direction);
 }
 
 int main() {
