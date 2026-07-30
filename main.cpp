@@ -1,7 +1,9 @@
 /*
 TODO:
 Coordinate Systems
-Camera implementations
+Camera implementation
+Mouse input listening
+
 */
 
 #include <glad/glad.h>
@@ -33,6 +35,15 @@ Camera implementations
 		::::::: END NOTE
 	*/
 
+//INITIAL CAMERA POSITIONS HERE
+glm::vec3 camera_position = glm::vec3(0.0, 0.0, 3.0f);;
+glm::vec3 camera_front_position = glm::vec3(0.0, 0.0, -1.0f); //remember opengl is a right hand axis system
+glm::vec3 camera_up_axis = glm::vec3(0.0, 1.0f, 0.0f);
+float delta_time = 0.0f; //time between current frame and last frame
+float lastFrame = 0.0f; //Time of last frame
+
+
+
 void Framebuffer_Set_Callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
@@ -40,6 +51,28 @@ void Framebuffer_Set_Callback(GLFWwindow* window, int width, int height) {
 void user_close_input(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwTerminate();
+	}
+}
+
+void get_key_press(GLFWwindow* window) {
+
+	float current_frame = glfwGetTime();
+	delta_time = current_frame - lastFrame;
+	lastFrame = current_frame;
+
+	float camera_speed = 2.5f * delta_time;
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		camera_position += camera_speed * camera_front_position;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		camera_position -= camera_speed * camera_front_position;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		camera_position -= glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		camera_position += glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed);
 	}
 }
 
@@ -212,6 +245,7 @@ int main() {
 
 	while (!glfwWindowShouldClose(window)) {
 		user_close_input(window);
+		get_key_press(window);
 		glEnable(GL_DEPTH_TEST);
 
 		glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
@@ -230,11 +264,10 @@ int main() {
 		//*************************************************************************************************************
 
 		//DEFINE CAMERA POSITIONS BELOW
-		float rotation_radius = 10.0f;
-		float cam_x = sin(glfwGetTime()) * rotation_radius;
-		float cam_z = cos(glfwGetTime()) * rotation_radius;
-		glm::mat4 view_matrix = glm::lookAt(glm::vec3(cam_x, 0.0f, cam_z),
-			glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::mat4 view_matrix = glm::lookAt(camera_position,
+			camera_position + camera_front_position, camera_up_axis);
+
 		unsigned int view_matrix_location = glGetUniformLocation(shader_program, "view_matrix");
 		glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, glm::value_ptr(view_matrix));
 

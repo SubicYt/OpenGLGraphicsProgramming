@@ -104,11 +104,16 @@ const char* get_vertex_shader() {
 
 		"out vec2 texture_coordinates;\n"
 		"uniform mat4 rotation_transformation;\n"//4x4 matrix uniform used for a transformation
+		
+		//below are the matricies necessary for camera viewing
+		//see notes for how to configure these matricies
 		"uniform mat4 model_matrix;\n"
 		"uniform mat4 view_matrix;\n"
 		"uniform mat4 perspective_proj_matrix; \n"
+
 		"void main()\n"
 		"{\n"
+		//assign gl_Position these special matricies
 		"gl_Position = perspective_proj_matrix * view_matrix * model_matrix *  vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n" // transformation of the positoin
 		"texture_coordinates = aTexCoordinates;"
 		"}\0";

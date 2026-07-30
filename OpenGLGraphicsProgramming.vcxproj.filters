@@ -44,6 +44,7 @@
     <Text Include="shadersNotes.txt" />
     <Text Include="Textures.txt" />
     <Text Include="CoordinateSystems.txt" />
+    <Text Include="CameraNotes.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\Downloads\stonetiles_003_diff.jpg" />

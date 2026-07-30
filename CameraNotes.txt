@@ -1,0 +1,8 @@
+4 Movement speed
+Currently we used a constant value for movement speed when walking around. In theory this seems
+fine, but in practice people’s machines have different processing powers and the result of that is
+that some people are able to render much more frames than others each second.
+
+Graphics applications and games usually keep track of a deltatime variable that stores the time
+it took to render the last frame. We then multiply all velocities with this deltaTime value. The
+result is that when we have a large deltaTime in a frame, meaning that the last frame took longer

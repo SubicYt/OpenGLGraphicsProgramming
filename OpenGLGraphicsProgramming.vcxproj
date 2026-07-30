@@ -139,6 +139,7 @@
     <ClCompile Include="MyShaders.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="CameraNotes.txt" />
     <Text Include="CoordinateSystems.txt" />
     <Text Include="GLSLnotes.txt" />
     <Text Include="OpenGLGr.acfa247a\notes.txt" />
