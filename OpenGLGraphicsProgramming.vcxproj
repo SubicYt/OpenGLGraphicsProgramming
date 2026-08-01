@@ -151,6 +151,7 @@
   <ItemGroup>
     <Image Include="..\..\..\Downloads\stonetiles_003_diff.jpg" />
     <Image Include="apocalyse.png" />
+    <Image Include="graycloud_lf.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyShaders.h" />

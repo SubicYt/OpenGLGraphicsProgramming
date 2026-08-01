@@ -38,7 +38,7 @@ unsigned int configure_texture(const char file_name[600]){
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data);
 	//finally generate mipmaps
-	glGenerateMipmap(texture_object);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(image_data);
 	return texture_object;
 }
@@ -48,9 +48,13 @@ unsigned int set_vertex_shader(const char* vertex_shader) {
 	unsigned int vertex_shader_object;
 	int status; // check compile status
 
+	//create a shader object
 	vertex_shader_object = glCreateShader(GL_VERTEX_SHADER);
+	//pass our shader source code to that object
 	glShaderSource(vertex_shader_object, 1, &vertex_shader, NULL);
+	//make sure it compiles
 	glCompileShader(vertex_shader_object);
+	//check the compile status
 	glGetShaderiv(vertex_shader_object, GL_COMPILE_STATUS, &status);
 
 	if (!status) {
@@ -124,6 +128,7 @@ const char* get_vertex_shader() {
 const char* get_fragment_shader() {
 	const char* fragment_shader = "#version 330 core\n"
 		"out vec4 fragment_data;\n"
+		
 		"in vec2 texture_coordinates; \n"
 
 		"uniform sampler2D our_stone_texture;\n"
@@ -142,8 +147,39 @@ const char* get_fragment_shader() {
 	return fragment_shader;
 }
 
+const char* get_background_vertex_shader() {
+
+	const char* background_vertex_shader = "#version 330 core\n"
+		"layout (location = 0) in vec2 quadPos;\n"
+		"layout (location = 1) in vec2 tex_coords;\n"
+
+		"out vec2 background_tex_coords;\n"
+
+		"void main()\n"
+		"{\n"
+		"gl_Position = vec4(quadPos.x, quadPos.y, 0.0, 1.0);\n"
+		"background_tex_coords = tex_coords;\n"
+		"}\0";
+
+	return background_vertex_shader;
+}
+
+const char* get_background_fragment_shader() {
+	const char* background_fragment_shader = "#version 330 core\n"
+		"out vec4 fragment_data;\n"
+		"in vec2 background_tex_coords;\n"
+		"uniform sampler2D out_background_texture;\n"
+
+		"void main()\n"
+		"{\n"
+		"fragment_data = texture(out_background_texture, background_tex_coords);\n"
+		"}\0";
+
+	return background_fragment_shader;
+}
+
 void enable_vertexAttrib_ptrs() {
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(0);
 
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));

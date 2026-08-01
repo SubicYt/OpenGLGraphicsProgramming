@@ -35,14 +35,14 @@ Mouse input listening
 		::::::: END NOTE
 	*/
 
-//INITIAL CAMERA POSITIONS HERE
+	//INITIAL CAMERA POSITIONS HERE
 glm::vec3 camera_position = glm::vec3(0.0, 0.0, 3.0f);;
 glm::vec3 camera_front_position = glm::vec3(0.0, 0.0, -1.0f); //remember opengl is a right hand axis system
 glm::vec3 camera_up_axis = glm::vec3(0.0, 1.0f, 0.0f);
 float delta_time = 0.0f; //time between current frame and last frame
 float lastFrame = 0.0f; //Time of last frame
 float yaw = -90.0f;
-float pitch = 0.0f; 
+float pitch = 0.0f;
 float lastX = 400, lastY = 300; //sets intial mouse coordinates to center of screen
 
 void Framebuffer_Set_Callback(GLFWwindow* window, int width, int height) {
@@ -88,7 +88,7 @@ void mouse_callback(GLFWwindow* window, double x_pos, double y_pos) {
 	}
 	//calculate mouse offset since last frame;
 	float xoffset = x_pos - lastX;
-	float yoffset = lastY- y_pos;
+	float yoffset = lastY - y_pos;
 	lastX = x_pos;
 	lastY = y_pos;
 
@@ -98,7 +98,7 @@ void mouse_callback(GLFWwindow* window, double x_pos, double y_pos) {
 
 	yaw += xoffset;
 	pitch += yoffset;
-	
+
 	//set a hard cap to pitch values
 	if (pitch > 89.0f) {
 		pitch = 89.0f;
@@ -155,12 +155,27 @@ int main() {
 	*/
 	char stone_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\stonetiles_003_diff.jpg";
 	char graffiti_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\apocalyse.png";
+	char background_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\graycloud_lf.jpg";
+
 
 	//Setup texture number 1
 	unsigned int stone_texture_object = configure_texture(stone_texture_file_path);
 	//Setup texture number 2
 	unsigned int graffiti_texture_object = configure_texture(graffiti_texture_file_path);
+	//setup backgroun texture
+	unsigned int background_texture_object = configure_texture(background_texture_file_path);
+	
 
+	float textured_quad_vertices[] = {
+		// position      // texcoords
+			-1.0f,  1.0f,    0.0f, 1.0f,
+			-1.0f, -1.0f,    0.0f, 0.0f,
+			 1.0f, -1.0f,    1.0f, 0.0f,
+
+			-1.0f,  1.0f,    0.0f, 1.0f,
+			 1.0f, -1.0f,    1.0f, 0.0f,
+			 1.0f,  1.0f,    1.0f, 1.0f
+	};
 
 	float triangle_verticies[] = {
 		//first triangle 
@@ -213,11 +228,20 @@ int main() {
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); //Assign GL_ARRAY_BUFFER, our VBO
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_verticies), &triangle_verticies, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_verticies), triangle_verticies, GL_STATIC_DRAW);
 	//^^^Copy our triange_verticies into our GL_ARRAY_BUFFER, set it to a GL_STATIC_DRAW;
 
-	//setup our vertex shader
+	//create "boiler-plate" for rendering a background image
+	unsigned int quad_VAO;
+	unsigned int quad_VBO;
+	glGenVertexArrays(1, &quad_VAO);
+	glBindVertexArray(quad_VAO);
 
+	glGenBuffers(1, &quad_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(textured_quad_vertices), textured_quad_vertices, GL_STATIC_DRAW);
+	
+	
 	/*
 	transformation data for our object
 	*/
@@ -258,23 +282,50 @@ int main() {
 	const char* fragment_shader_source_code = get_fragment_shader();
 	unsigned int fragment_shader_object = set_fragment_shader(fragment_shader_source_code);
 
+	const char* background_vertex_src_code = get_background_vertex_shader();
+	std::cout << " we made it to the background shader but the vertex shader failed";
+	unsigned int background_vertex_shader_obj = set_vertex_shader(background_vertex_src_code);
+	
+	const char* background_fragment_src_code = get_background_fragment_shader();
+	unsigned int background_fragment_shader_obj = set_fragment_shader(background_fragment_src_code);
+
 	//Now we must create a shader program and link the shaders
 	unsigned int shader_program;
 	shader_program = set_shader_program(triangles_shader_obj, fragment_shader_object);
 
+	unsigned int background_shader_program;
+	background_shader_program = set_shader_program(background_vertex_shader_obj, background_fragment_shader_obj);
 
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	enable_vertexAttrib_ptrs(); // see MyShaders src file
+	//below we manually do (for the background shader) what the above function is doing
+
+
+	glBindVertexArray(quad_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_VBO);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(0 * sizeof(float)));
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glUseProgram(shader_program); // make sure to specify program used
 	unsigned int stone_texture_loc = glGetUniformLocation(shader_program, "our_stone_texture");
 	unsigned int graffiti_texture_loc = glGetUniformLocation(shader_program, "our_graffiti_texture");
-
 	glUniform1i(stone_texture_loc, 0); // specify which texture unit belongs to which shader sampler 
-	glUniform1i(graffiti_texture_loc, 1); //specify which texture unit belongs to which shader sampler 
+	glUniform1i(graffiti_texture_loc, 1); //specify which texture unit belongs to which shader sampler
+
+	glUseProgram(background_shader_program);
+	unsigned int background_sky_img_texture_loc = glGetUniformLocation(background_shader_program, "out_background_texture");
+ 
+	glUniform1i(background_sky_img_texture_loc, 2);
 
 	//pass transformation matrix to the shader
 	//last param is the actual transformation datad
 	//we do this with glUnifromMatrix4fv
+
+	glUseProgram(shader_program);
+	glBindVertexArray(VAO);
 	unsigned int transformation_uniform_location = glGetUniformLocation(shader_program, "rotation_transformation");
 	glUniformMatrix4fv(transformation_uniform_location, 1, GL_FALSE, glm::value_ptr(transformation));
 
@@ -282,25 +333,31 @@ int main() {
 	glUniformMatrix4fv(perspective_matrix_loc, 1, GL_FALSE, glm::value_ptr(perspective_proj_matrix));
 
 
+
 	while (!glfwWindowShouldClose(window)) {
 		user_close_input(window);
 		get_usr_movement_info(window);
 		glfwSetCursorPosCallback(window, mouse_callback);
-		
-		glEnable(GL_DEPTH_TEST);
 
-		glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(shader_program);
+		glDisable(GL_DEPTH_TEST);
+		glUseProgram(background_shader_program);
+		glBindVertexArray(quad_VAO);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, background_texture_object);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+
+		glEnable(GL_DEPTH_TEST);
+		glUseProgram(shader_program);
+		glBindVertexArray(VAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, stone_texture_object);
 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, graffiti_texture_object);
-
-		glBindVertexArray(VAO); //why do it a second time in our render loop?
+		 //why do it a second time in our render loop?
 		//INCLUDE THIS IN MAIN RENDER LOOP TO UPDATE EACH FRAME
 		//*************************************************************************************************************
 
@@ -323,6 +380,7 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		//*************************************************************************************************************
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

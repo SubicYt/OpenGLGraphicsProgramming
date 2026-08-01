@@ -9,5 +9,7 @@ unsigned int set_fragment_shader(const char* fragment_shader);
 unsigned int set_shader_program(unsigned int vertex_shader, unsigned int fragment_shader);
 const char* get_vertex_shader();
 const char* get_fragment_shader();
+const char* get_background_vertex_shader();
+const char* get_background_fragment_shader();
 void enable_vertexAttrib_ptrs();
 #endif // MYSHADERS_H#pragma once
