@@ -1,9 +1,10 @@
 /*
 TODO:
-Coordinate Systems
-Camera implementation
-Mouse input listening
+TAKES PRECEDENCE!
+REWRITE ALL MATRIX CONFIGS IN SEPERATE CPP FILES
 
+after above steps:
+	implement meshes
 */
 
 #include <glad/glad.h>
@@ -15,8 +16,13 @@ Mouse input listening
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "MyShaders.h"
 
+#include "MyShaders.h"
+#include "CameraMatricies.h"
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 //instantiate a GLFW Window()
 #pragma comment(lib, "glfw3.lib")
@@ -36,84 +42,12 @@ Mouse input listening
 	*/
 
 	//INITIAL CAMERA POSITIONS HERE
-glm::vec3 camera_position = glm::vec3(0.0, 0.0, 3.0f);;
-glm::vec3 camera_front_position = glm::vec3(0.0, 0.0, -1.0f); //remember opengl is a right hand axis system
-glm::vec3 camera_up_axis = glm::vec3(0.0, 1.0f, 0.0f);
-float delta_time = 0.0f; //time between current frame and last frame
-float lastFrame = 0.0f; //Time of last frame
-float yaw = -90.0f;
-float pitch = 0.0f;
-float lastX = 400, lastY = 300; //sets intial mouse coordinates to center of screen
+
 
 void Framebuffer_Set_Callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void user_close_input(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwTerminate();
-	}
-}
-
-void get_usr_movement_info(GLFWwindow* window) {
-
-	float current_frame = glfwGetTime();
-	delta_time = current_frame - lastFrame;
-	lastFrame = current_frame;
-
-	float camera_speed = 2.5f * delta_time;
-
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera_position += camera_speed * camera_front_position;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera_position -= camera_speed * camera_front_position;
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera_position -= glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed) * 0.05f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera_position += glm::normalize(glm::cross(camera_front_position, camera_up_axis) * camera_speed) * 0.05f;
-	}
-
-
-}
-
-void mouse_callback(GLFWwindow* window, double x_pos, double y_pos) {
-	//here x_pos and y_pos are the current mouse positions
-	//they get updated in the glfwSetMousePosCallback()
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) {
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
-	}
-	//calculate mouse offset since last frame;
-	float xoffset = x_pos - lastX;
-	float yoffset = lastY - y_pos;
-	lastX = x_pos;
-	lastY = y_pos;
-
-	const float mouse_sens = 0.05f;
-	xoffset *= mouse_sens;
-	yoffset *= mouse_sens;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	//set a hard cap to pitch values
-	if (pitch > 89.0f) {
-		pitch = 89.0f;
-	}
-	if (pitch < -89.0f) {
-		pitch = -89.0f;
-	}
-
-	//update camera direction
-	glm::vec3 camera_direction;
-	camera_direction.x = cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-	camera_direction.y = sin(glm::radians(pitch));
-	camera_direction.z = sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-	camera_front_position = glm::normalize(camera_direction);
-}
 
 int main() {
 	if (!glfwInit()) {
@@ -155,7 +89,7 @@ int main() {
 	*/
 	char stone_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\stonetiles_003_diff.jpg";
 	char graffiti_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\apocalyse.png";
-	char background_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\graycloud_lf.jpg";
+	char background_texture_file_path[150] = "C:\\Users\\Ethan Denning\\OneDrive\\Desktop\\OpenGLGraphicsProgramming\\planet_2_0.jpg";
 
 
 	//Setup texture number 1
@@ -165,18 +99,19 @@ int main() {
 	//setup backgroun texture
 	unsigned int background_texture_object = configure_texture(background_texture_file_path);
 	
-
+	//background verticies
 	float textured_quad_vertices[] = {
 		// position      // texcoords
-			-1.0f,  1.0f,    0.0f, 1.0f,
-			-1.0f, -1.0f,    0.0f, 0.0f,
-			 1.0f, -1.0f,    1.0f, 0.0f,
+		-1.0f,  1.0f,    0.0f, 1.0f,
+		-1.0f, -1.0f,    0.0f, 0.0f,
+		1.0f, -1.0f,    1.0f, 0.0f,
 
-			-1.0f,  1.0f,    0.0f, 1.0f,
-			 1.0f, -1.0f,    1.0f, 0.0f,
-			 1.0f,  1.0f,    1.0f, 1.0f
+		-1.0f,  1.0f,    0.0f, 1.0f,
+		1.0f, -1.0f,    1.0f, 0.0f,
+		1.0f,  1.0f,    1.0f, 1.0f
 	};
-
+	//df
+	//main cube object
 	float triangle_verticies[] = {
 		//first triangle 
 		//formatting of the following bytes:
@@ -187,29 +122,34 @@ int main() {
 		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
 		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
 		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
 		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
 		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
 		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
 		-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+
 		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 		-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
 		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
 		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
 		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 		0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
 		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 		0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
 		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
 		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
 		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
 		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
 		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
@@ -219,6 +159,7 @@ int main() {
 		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 		//cube
 	};
+
 
 	unsigned int VAO; //vector array object
 	glGenVertexArrays(1, &VAO);
@@ -241,38 +182,32 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, quad_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(textured_quad_vertices), textured_quad_vertices, GL_STATIC_DRAW);
 	
-	
 	/*
 	transformation data for our object
 	*/
-
 	glm::vec3 cubePositions[] = {
 		glm::vec3(4.0f, 0.5f, 9.0f),
-	glm::vec3(2.0f, 5.0f, -15.0f),
-	glm::vec3(-1.5f, -2.2f, -2.5f),
-	glm::vec3(-3.8f, -2.0f, -12.3f),
-	glm::vec3(2.4f, -0.4f, -3.5f),
-	glm::vec3(-1.7f, 3.0f, -7.5f),
-	glm::vec3(1.3f, -2.0f, -2.5f),
-	glm::vec3(1.5f, 2.0f, -2.5f),
-	glm::vec3(1.5f, 0.2f, -1.5f),
-	glm::vec3(-1.3f, 1.0f, -1.5f)
+		glm::vec3(2.0f, 5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f, 3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f, 2.0f, -2.5f),
+		glm::vec3(1.5f, 0.2f, -1.5f),
+		glm::vec3(-1.3f, 1.0f, -1.5f),
+		glm::vec3(-4.9f, 4.0f, -9.5f),
+		glm::vec3(-9.3f, 13.0f, -15.5f),
+		glm::vec3(-10.3f, 8.0f, -22.5f)
 	};
 
-	glm::mat4 transformation = glm::mat4(1.0f);
-	transformation = glm::rotate(transformation, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
-	transformation = glm::scale(transformation, glm::vec3(1.5, 1.5, 1.5));
-	//model_matrix is included in render loop
+	//OUT MODEL AND VIEW MATRICES ARE IN THE RENDERLOOP
 
-   //next create a view matrix and move slightly backward to object is visible
-   //this means to move the entire scene forwards (move it along the negative z axis)
-	glm::mat4 view_matrix = glm::mat4(1.0f);
-	view_matrix = glm::translate(view_matrix, glm::vec3(0.0, 0.0, -3.0f));
-
-	//finally we must create our perspective projection matrix
+	//we must create our perspective projection matrix
 	glm::mat4 perspective_proj_matrix = glm::mat4(1.0f);
 	//width and height are just going to correspond with my viewport
 	perspective_proj_matrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
 
 	//first get and configure the vertex shader
 	const char* vertex_shader_source_code = get_vertex_shader();
@@ -296,18 +231,11 @@ int main() {
 	unsigned int background_shader_program;
 	background_shader_program = set_shader_program(background_vertex_shader_obj, background_fragment_shader_obj);
 
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	enable_vertexAttrib_ptrs(); // see MyShaders src file
+	
+	enable_vertexAttrib_ptrs(VAO, VBO); // see MyShaders src file
 	//below we manually do (for the background shader) what the above function is doing
 
-
-	glBindVertexArray(quad_VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quad_VBO);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	enable_backgroundVertexAttrib_ptrs(quad_VAO, quad_VBO);
 
 	glUseProgram(shader_program); // make sure to specify program used
 	unsigned int stone_texture_loc = glGetUniformLocation(shader_program, "our_stone_texture");
@@ -317,28 +245,20 @@ int main() {
 
 	glUseProgram(background_shader_program);
 	unsigned int background_sky_img_texture_loc = glGetUniformLocation(background_shader_program, "out_background_texture");
- 
 	glUniform1i(background_sky_img_texture_loc, 2);
 
-	//pass transformation matrix to the shader
-	//last param is the actual transformation datad
-	//we do this with glUnifromMatrix4fv
 
 	glUseProgram(shader_program);
 	glBindVertexArray(VAO);
-	unsigned int transformation_uniform_location = glGetUniformLocation(shader_program, "rotation_transformation");
-	glUniformMatrix4fv(transformation_uniform_location, 1, GL_FALSE, glm::value_ptr(transformation));
-
+	//pass the perspective matrix data to our shader
 	unsigned int perspective_matrix_loc = glGetUniformLocation(shader_program, "perspective_proj_matrix");
 	glUniformMatrix4fv(perspective_matrix_loc, 1, GL_FALSE, glm::value_ptr(perspective_proj_matrix));
 
-
-
+	//main render loop
 	while (!glfwWindowShouldClose(window)) {
-		user_close_input(window);
-		get_usr_movement_info(window);
-		glfwSetCursorPosCallback(window, mouse_callback);
-
+		get_usr_input(window);
+		glfwSetCursorPosCallback(window, mouse_callback_function);
+		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glDisable(GL_DEPTH_TEST);
@@ -347,7 +267,6 @@ int main() {
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, background_texture_object);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-
 
 		glEnable(GL_DEPTH_TEST);
 		glUseProgram(shader_program);
@@ -360,8 +279,8 @@ int main() {
 		 //why do it a second time in our render loop?
 		//INCLUDE THIS IN MAIN RENDER LOOP TO UPDATE EACH FRAME
 		//*************************************************************************************************************
-
 		//DEFINE CAMERA POSITIONS BELOW
+
 
 		glm::mat4 view_matrix = glm::lookAt(camera_position,
 			camera_position + camera_front_position, camera_up_axis);
@@ -369,23 +288,22 @@ int main() {
 		unsigned int view_matrix_location = glGetUniformLocation(shader_program, "view_matrix");
 		glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, glm::value_ptr(view_matrix));
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 12; i++) {
 			glm::mat4 model_matrix = glm::mat4(1.0f);
 			float angle_of_rotation = 33.0f * i; // just to have different object positioned differently around the scene
 			model_matrix = glm::translate(model_matrix, cubePositions[i]);
-			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * angle_of_rotation * 0.009f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * angle_of_rotation * 0.023f, glm::vec3(0.0f, 1.40f, 1.0f));
 			unsigned int model_matrix_location = glGetUniformLocation(shader_program, "model_matrix");
+
 			glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		//*************************************************************************************************************
-
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
 	}
 	glfwTerminate();
 	return 0;
-}
+}	

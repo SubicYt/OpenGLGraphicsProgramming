@@ -11,5 +11,6 @@ const char* get_vertex_shader();
 const char* get_fragment_shader();
 const char* get_background_vertex_shader();
 const char* get_background_fragment_shader();
-void enable_vertexAttrib_ptrs();
+void enable_vertexAttrib_ptrs(unsigned int VAO, unsigned int VBO);
+void enable_backgroundVertexAttrib_ptrs(unsigned int quad_VAO, unsigned int quad_VBO);
 #endif // MYSHADERS_H#pragma once

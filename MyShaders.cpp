@@ -17,6 +17,7 @@
 #pragma comment(lib, "shell32.lib")
 
 
+
 unsigned int configure_texture(const char file_name[600]){
 	int width, height, nr_channels;
 	unsigned int texture_object;
@@ -178,10 +179,21 @@ const char* get_background_fragment_shader() {
 	return background_fragment_shader;
 }
 
-void enable_vertexAttrib_ptrs() {
+void enable_vertexAttrib_ptrs(unsigned int VAO, unsigned int VBO) {
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(0);
 
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+}
+
+void enable_backgroundVertexAttrib_ptrs(unsigned int quad_VAO, unsigned int quad_VBO) {
+	glBindVertexArray(quad_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_VBO);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(0 * sizeof(float)));
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 }

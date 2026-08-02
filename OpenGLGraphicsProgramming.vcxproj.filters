@@ -27,6 +27,9 @@
     <ClCompile Include="MyShaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CameraMatricies.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="GLSLnotes.txt">
@@ -50,9 +53,13 @@
     <Image Include="..\..\..\Downloads\stonetiles_003_diff.jpg" />
     <Image Include="apocalyse.png" />
     <Image Include="graycloud_lf.jpg" />
+    <Image Include="..\..\..\Downloads\planet_2_0.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyShaders.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraMatricies.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
